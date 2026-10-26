@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shop — TR3SMANO</title>
+<link rel="icon" href="assets/logo_tr3smano-positivo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-page="shop" data-header="light">
+
+<section class="page-hero">
+  <div class="ph-img"><img src="assets/Vinedos-Tresmano-3.webp" alt="" width="1920" height="1058"></div>
+  <div class="wrap">
+    <span class="eyebrow" data-reveal>Online cellar · Free shipping from €150</span>
+    <h1 class="h-xl split">The <em>Shop</em></h1>
+    <p data-reveal>Wines from Olmedillo de Roa, collections in their signature cases, magnums, winery experiences and a few bottles we love from friends.</p>
+  </div>
+</section>
+
+<div class="toolbar">
+  <div class="wrap">
+    <div class="chips" id="chips" role="tablist" aria-label="Filter"></div>
+    <label class="sort">Sort
+      <select id="sort"><option value="featured">Featured</option><option value="price-asc">Price — low to high</option><option value="price-desc">Price — high to low</option><option value="name">Name A–Z</option></select>
+    </label>
+  </div>
+</div>
+
+<main class="shop-body">
+  <div class="wrap">
+    <div class="shop-meta"><span id="count"></span><span>IVA included</span></div>
+    <div class="pgrid" id="grid"></div>
+  </div>
+</main>
+
+<div id="footer-mount"></div>
+
+<script src="js/products.js"></script>
+<script src="js/config.js"></script>
+<script src="js/main.js"></script>
+<script>
+(function(){
+  const P = window.PRODUCTS, grid = document.getElementById('grid'), chips = document.getElementById('chips');
+  let cat = new URLSearchParams(location.search).get('cat') || 'all';
+  if (!CATS.some(c => c[0] === cat)) cat = 'all';
+  const sorters = { featured:()=>0, 'price-asc':(a,b)=>a.price-b.price, 'price-desc':(a,b)=>b.price-a.price, name:(a,b)=>a.title.localeCompare(b.title) };
+  const editorial = `<aside class="editorial-break" data-reveal>
+      <div class="t"><span class="eyebrow light">Club Milla</span><h3>Some bottles are <em>by invitation</em>.</h3><p>Members get first access to Tm, limited releases and winery experiences.</p><a class="btn btn--light" href="index.html#visit">Request an invitation <span class="arrow"></span></a></div>
+      <div class="i"><img class="lazy" loading="lazy" src="assets/Bodega-Tr3smano_Botellero_Comp.jpg" alt="Bottle library" width="1920" height="1280"></div>
+    </aside>`;
+  function drawChips(){
+    chips.innerHTML = CATS.map(([k,l]) => { const n = k==='all'?P.length:P.filter(p=>p.cat===k).length; return `<button class="chip ${k===cat?'on':''}" data-c="${k}" role="tab" aria-selected="${k===cat}">${l}<small>${n}</small></button>`; }).join('');
+  }
+  function draw(){
+    const sort = document.getElementById('sort').value;
+    const list = P.filter(p => cat==='all' || p.cat===cat).slice().sort(sorters[sort]);
+    grid.innerHTML = list.map((p,i) => TM.card(p,i)).join('') || '<div class="empty">Nothing in this category yet.</div>';
+    if (cat==='all' && sort==='featured' && list.length>8) grid.children[7].insertAdjacentHTML('afterend', editorial);
+    document.getElementById('count').textContent = `${list.length} ${list.length===1?'product':'products'}`;
+    TM.hookLazy(grid); TM.hookReveal(grid); drawChips();
+  }
+  chips.addEventListener('click', e => { const b = e.target.closest('[data-c]'); if(!b) return; cat = b.dataset.c; history.replaceState(null,'', cat==='all'?'shop.html':'?cat='+cat); draw(); });
+  document.getElementById('sort').onchange = draw;
+  draw();
+})();
+</script>
+</body>
+</html>

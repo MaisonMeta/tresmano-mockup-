@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TR3SMANO — Ribera del Duero</title>
+<meta name="description" content="Bodega Tresmano. We honour our origin by dedicating time and heart to create unique experiences.">
+<link rel="icon" href="assets/logo_tr3smano-positivo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+.mosaic{columns:4 260px;column-gap:clamp(12px,1.4vw,22px)}
+.mosaic figure{margin:0 0 clamp(12px,1.4vw,22px);overflow:hidden;break-inside:avoid;background:var(--stone)}
+.mosaic img{width:100%;height:auto;transition:transform 1.4s var(--ease)}
+.mosaic figure:hover img{transform:scale(1.05)}
+.places{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(12px,1.4vw,22px)}
+.places figure{margin:0;position:relative;overflow:hidden;aspect-ratio:2/3;background:var(--stone)}
+.places figure:nth-child(2){margin-top:clamp(30px,6vw,110px)}
+.places img{width:100%;height:100%;object-fit:cover;transition:transform 1.6s var(--ease)}
+.places figure:hover img{transform:scale(1.05)}
+.places figcaption{position:absolute;left:18px;bottom:16px;right:18px;color:#fff;font-family:var(--serif);font-size:clamp(24px,2.4vw,36px);text-shadow:0 2px 20px rgba(0,0,0,.5);line-height:1}
+.places figcaption small{display:block;font-family:var(--sans);font-size:10px;letter-spacing:.26em;text-transform:uppercase;margin-bottom:10px;opacity:.8}
+@media(max-width:700px){.places{grid-template-columns:1fr}.places figure:nth-child(2){margin-top:0}.places figure{aspect-ratio:4/5}}
+.press{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;padding-block:clamp(40px,5vw,70px);border-bottom:1px solid var(--line)}
+.press blockquote{margin:0;font-family:var(--serif);font-size:clamp(26px,3.4vw,54px);font-style:italic;font-weight:300;line-height:1.1;max-width:26ch}
+.press cite{font-style:normal;font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
+.diag{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.map-card{margin-top:30px;max-width:420px;background:#fff;border:1px solid var(--line);padding:6px}
+.map-card img{width:100%;height:auto}
+</style>
+</head>
+<body data-page="home">
+
+<!-- ═══ HERO ═══ -->
+<section class="hero" id="top">
+  <img class="hero-poster" src="assets/hero-poster.jpg" alt="" fetchpriority="high">
+  <video id="heroVideo" muted loop playsinline autoplay preload="metadata" poster="assets/hero-poster.jpg" aria-hidden="true">
+    <source src="assets/hero-loop.mp4" type="video/mp4">
+  </video>
+  <div class="hero-ctrl"><button id="heroToggle" aria-label="Pause video"><svg viewBox="0 0 10 10" id="icoPause"><path d="M1 0h3v10H1zM6 0h3v10H6z"/></svg><svg viewBox="0 0 10 10" id="icoPlay" style="display:none"><path d="M1 0l9 5-9 5z"/></svg></button><span>Ribera del Duero</span></div>
+  <div class="hero-meta">Bodega Tresmano — Est. 2014 · Olmedillo de Roa</div>
+  <div class="hero-inner">
+    <span class="eyebrow light" data-reveal style="--d:.2s">Denominación de Origen · Ribera del Duero</span>
+    <h1 class="split" style="--d:.35s;margin-top:22px">Time, heart <em>&amp;</em> origin.</h1>
+    <div class="hero-row">
+      <p class="hero-sub" data-reveal style="--d:.9s">We honour our origin by dedicating time and heart to create unique experiences.</p>
+      <div class="hero-cta" data-reveal style="--d:1.1s">
+        <a href="shop.html" class="btn btn--light">Shop the wines <span class="arrow"></span></a>
+        <a href="#" class="btn btn--light" data-film>Watch the film</a>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-cue"></div>
+</section>
+
+<!-- ═══ MARQUEE ═══ -->
+<div class="marquee" aria-label="Press">
+  <div class="marquee-track">
+    <span>“The superb newcomer to Ribera del Duero” — Jancis Robinson</span><span>Situated in the Golden Mile “Grand Cru”</span><span>Vines of 60 to 100 years</span><span>A “must have” wine from Ribera del Duero</span>
+    <span>“The superb newcomer to Ribera del Duero” — Jancis Robinson</span><span>Situated in the Golden Mile “Grand Cru”</span><span>Vines of 60 to 100 years</span><span>A “must have” wine from Ribera del Duero</span>
+  </div>
+</div>
+
+<!-- ═══ MANIFESTO ═══ -->
+<section class="sec" id="story">
+  <div class="wrap manifesto">
+    <div class="txt">
+      <span class="eyebrow" data-reveal>Our philosophy</span>
+      <h2 class="split">Old vines, <em>patient</em> hands, and a landscape that does most of the talking.</h2>
+      <p data-reveal>Tresmano invites you to discover why. Led by winemaker Pedro Aibar, Old vine Tempranillo is expertly crafted — carefully aged in premium French oak, with a drive for excellence at all stages.</p>
+      <p style="margin-top:28px" data-reveal><a class="link" href="#vineyard">Walk the vineyard <span class="arrow"></span></a></p>
+    </div>
+    <figure class="img1" data-reveal="img" style="margin-bottom:0"><img class="lazy" loading="lazy" decoding="async" src="assets/Cepa-Antigua-Tresmano.webp" alt="Ancient bush vine in Ribera del Duero" width="1200" height="1226"></figure>
+    <figure class="img2" data-reveal="img" style="--d:.2s"><img class="lazy" loading="lazy" decoding="async" src="assets/FEED-TRen-conflicto-de-miltrescientosgramos-audiovisual-2024-07-02-44.png" alt="Tempranillo clusters in the harvest crate" width="656" height="435"></figure>
+  </div>
+</section>
+
+<!-- ═══ WINES ═══ -->
+<section class="wines sec" id="wines">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="h-xl split">The <em>Wine</em></h2>
+      <span class="eyebrow light" data-reveal>Four wines · one origin</span>
+    </div>
+
+    <article class="wine-row">
+      <div class="wine-bottle" data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/PROVENTUS-scaled.jpg" alt="Proventus bottle" width="1000" height="2560"><span class="tag">Proventus</span></div>
+      <div class="wine-copy">
+        <span class="wine-num" data-reveal>I — Ribera del Duero red</span>
+        <h3 class="split">Proventus</h3>
+        <p class="kicker" data-reveal>Fresh, honest, 100% Tinta del País.</p>
+        <p data-reveal>A Ribera del Duero red made entirely from Tinta del País with light barrel ageing. The vines were planted by Fernando Remírez de Ganuza.</p>
+        <div class="wine-facts" data-reveal><div><b>100%</b><small>Tinta del País</small></div><div><b>Light</b><small>Barrel ageing</small></div></div>
+        <div class="row-cta" data-reveal><a class="btn btn--light" href="shop.html?cat=red">Shop Proventus <span class="arrow"></span></a></div>
+      </div>
+    </article>
+
+    <article class="wine-row">
+      <div class="wine-bottle" data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/TRESMANO-SIN-ANADA-scaled.jpg" alt="Tr3smano Vendimia bottle" width="1000" height="2560"><span class="tag">Vendimia</span></div>
+      <div class="wine-copy">
+        <span class="wine-num" data-reveal>II — The flagship</span>
+        <h3 class="split">Tr3smano <em>Vendimia</em></h3>
+        <p class="kicker" data-reveal>The start of a great adventure.</p>
+        <p data-reveal>Grapes from three subzones, brought together after 18 months in Bordeaux barrels — a blend of American (<i>Quercus alba</i>) and French (<i>Quercus robur</i>) oak.</p>
+        <div class="wine-facts" data-reveal><div><b>3</b><small>Subzones</small></div><div><b>18</b><small>Months in oak</small></div></div>
+        <div class="row-cta" data-reveal><a class="btn btn--light" href="product.html?p=tr3smano-vendimia-2014">First harvest 2014 <span class="arrow"></span></a></div>
+      </div>
+    </article>
+
+    <article class="wine-row">
+      <div class="wine-bottle" data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/albillo-mayor-2021.jpg" alt="Tm bottle" width="500" height="1300"><span class="tag">Tm — Tinto Magistral</span></div>
+      <div class="wine-copy">
+        <span class="wine-num" data-reveal>III — Only in exceptional years</span>
+        <h3 class="split"><em>Tm</em> Magistral</h3>
+        <p class="kicker" data-reveal>Fernando and Pedro taste every barrel, every month.</p>
+        <p data-reveal>Made only in exceptional years from selected vines, aged more than 24 months on average. A wine that is waited for, not scheduled.</p>
+        <div class="wine-facts" data-reveal><div><b>24+</b><small>Months of ageing</small></div><div><b>Rare</b><small>Exceptional years only</small></div></div>
+        <div class="row-cta" data-reveal><a class="btn btn--light" href="product.html?p=magnum-tm-by-tr3smano">Magnum Tm <span class="arrow"></span></a></div>
+      </div>
+    </article>
+
+    <article class="wine-row">
+      <div class="wine-bottle" data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/albillo-mayor-2021-1.jpg" alt="Albillo Mayor bottle" width="500" height="1300"><span class="tag">Albillo Mayor</span></div>
+      <div class="wine-copy">
+        <span class="wine-num" data-reveal>IV — The white</span>
+        <h3 class="split">Albillo <em>Mayor</em></h3>
+        <p class="kicker" data-reveal>Limited to 1,000 bottles.</p>
+        <p data-reveal>A white from 100% Albillo Mayor, grown in 60–100 year-old vineyards in Olmedillo and La Aguilera. Nine months in four new French oak barrels.</p>
+        <div class="wine-facts" data-reveal><div><b>60–100</b><small>Year-old vines</small></div><div><b>1,000</b><small>Bottles only</small></div></div>
+        <div class="row-cta" data-reveal><a class="btn btn--light" href="product.html">Discover Albillo Mayor <span class="arrow"></span></a></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ═══ VINEYARD ═══ -->
+<section class="vineyard sec" id="vineyard">
+  <div class="wrap v-intro">
+    <h2 class="h-xl split">The <em>Vineyard</em></h2>
+    <p data-reveal>Old-vine bush plantings in the Golden Mile of Ribera del Duero. Drag, scroll or swipe through a year among the vines.</p>
+  </div>
+  <div>
+    <div class="hscroll" tabindex="0" aria-label="Vineyard gallery">
+      <figure class="h-card"><img class="lazy" loading="lazy" decoding="async" src="assets/Vinedos-Tresmano-HOME.webp" alt="Vineyards and hill village" width="1200" height="901"><figcaption>Golden Mile</figcaption></figure>
+      <figure class="h-card"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2213.webp" alt="Bush vine" width="600" height="900"></figure>
+      <figure class="h-card"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2223.webp" alt="Old vine among pines" width="1350" height="900"><figcaption>Cepa antigua</figcaption></figure>
+      <figure class="h-card"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2285.webp" alt="Vine in spring" width="600" height="900"></figure>
+      <figure class="h-card"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2364.webp" alt="Almond blossom and vine" width="1350" height="900"><figcaption>Spring</figcaption></figure>
+      <figure class="h-card"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2396.webp" alt="Blossom detail" width="1350" height="900"></figure>
+      <figure class="h-card"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2345.webp" alt="Vine trunk" width="600" height="900"></figure>
+      <figure class="h-card"><img class="lazy" loading="lazy" decoding="async" src="assets/Vinedos-Tresmano-3.webp" alt="Vineyard rows" width="1920" height="1058"><figcaption>Rows in April</figcaption></figure>
+      <figure class="h-card"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2398.webp" alt="Rows with pine" width="600" height="900"></figure>
+      <figure class="h-card"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2456.webp" alt="Green rows under the hills" width="1350" height="900"></figure>
+      <figure class="h-card"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2471.webp" alt="Gnarled vine against sky" width="600" height="900"></figure>
+      <figure class="h-card"><img class="lazy" loading="lazy" decoding="async" src="assets/Tresmano-Vinedo-fondo-1.webp" alt="Panorama of the estate" width="1920" height="1080"><figcaption>The estate</figcaption></figure>
+      <figure class="h-card"><img class="lazy" loading="lazy" decoding="async" src="assets/53221264531_248da992a4_k.jpg" alt="Grapes on the vine" width="1920" height="1442"></figure>
+    </div>
+    <div class="h-prog"><i></i></div>
+  </div>
+
+  <div class="wrap">
+    <div class="stats">
+      <div data-reveal><b>60–100</b><small>Year-old vines<br>in Olmedillo &amp; La Aguilera</small></div>
+      <div data-reveal style="--d:.1s"><b>3</b><small>Subzones<br>blended in Vendimia</small></div>
+      <div data-reveal style="--d:.2s"><b>24+</b><small>Months of ageing<br>for Tm</small></div>
+      <div data-reveal style="--d:.3s"><b>1,000</b><small>Bottles of<br>Albillo Mayor</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRESS / PLACES ═══ -->
+<section class="sec" style="padding-top:0">
+  <div class="wrap">
+    <div class="press"><blockquote class="split">“The superb newcomer to Ribera del Duero.”</blockquote><cite data-reveal>Jancis Robinson</cite></div>
+    <div class="places" style="margin-top:clamp(40px,6vw,90px)">
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/head-mobile-el-vino.jpg" alt="Tempranillo" width="960" height="1440"><figcaption><small>01</small>The Wine</figcaption></figure>
+      <figure data-reveal="img" style="--d:.15s"><img class="lazy" loading="lazy" decoding="async" src="assets/head-home-mobile.jpg" alt="Two growers in the vineyard" width="960" height="1440"><figcaption><small>02</small>The Vineyard</figcaption></figure>
+      <figure data-reveal="img" style="--d:.3s"><img class="lazy" loading="lazy" decoding="async" src="assets/head-mobile-la-bodega.jpg" alt="Winery architecture" width="960" height="1440"><figcaption><small>03</small>The Winery</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ WINERY ═══ -->
+<section class="winery sec" id="winery">
+  <div class="wrap winery-grid">
+    <div class="winery-sticky">
+      <span class="eyebrow" data-reveal>Architecture for patience</span>
+      <h2 class="h-xl split" style="margin-top:22px">The <em>Winery</em></h2>
+      <p data-reveal>Gravity-led, quiet and precise: stainless tanks, a barrel hall that holds the light, a bottle library, and a long table for tasting. Every stage is designed around one idea — give the wine time.</p>
+      <a class="link" href="#visit" data-reveal>Book a visit <span class="arrow"></span></a>
+    </div>
+    <div class="winery-stack">
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/Bodega-Tr3smano_Barricas_Comp.webp" alt="Barrel hall" width="1920" height="1280"><figcaption>Barrel hall</figcaption></figure>
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/Bodega-Tr3smano_Depositos_Comp.jpg" alt="Tank room" width="1920" height="1280"><figcaption>Tank room</figcaption></figure>
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/Bodega-Tr3smano_Botellero_Comp.jpg" alt="Bottle library" width="1920" height="1280"><figcaption>Bottle library</figcaption></figure>
+      <figure data-reveal="img" style="width:78%;margin-left:auto"><img class="lazy" loading="lazy" decoding="async" src="assets/Bodega-Tr3smano_Catas2_Comp.jpg" alt="Tasting room" width="1920" height="1280"><figcaption>Tasting room</figcaption></figure>
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/img-bodega05.jpg" alt="Winery façade" width="522" height="506" style="width:62%"><figcaption>Façade</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FILM ═══ -->
+<section class="film" id="film">
+  <div class="film-bg"><img class="lazy" loading="lazy" decoding="async" data-parallax=".1" src="assets/Vista-area-Bodega-Tresmano.webp" alt="Aerial view of the winery" width="1600" height="1200"></div>
+  <div class="film-inner">
+    <span class="eyebrow light" data-reveal>Our history · the film</span>
+    <h2 class="split">Discover <em>why.</em></h2>
+    <button class="play" data-film aria-label="Play the film" data-reveal><svg viewBox="0 0 24 24"><path d="M5 2l17 10L5 22z"/></svg></button>
+  </div>
+</section>
+
+<!-- ═══ SHOP TEASER ═══ -->
+<section class="sec" id="shop-teaser">
+  <div class="wrap">
+    <div class="sec-head"><h2 class="h-xl split">From the <em>cellar</em></h2><a class="link" href="shop.html" data-reveal>Shop all wines <span class="arrow"></span></a></div>
+    <div class="pgrid" id="featured"></div>
+  </div>
+</section>
+
+<!-- ═══ MOSAIC ═══ -->
+<section class="sec" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head"><h2 class="h-l split">A year <em>in the vines</em></h2><span class="eyebrow" data-reveal>Archive · April shoot</span></div>
+    <div class="mosaic">
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/Shooting-TR3SMANO-abril-3.webp" alt="" width="1350" height="900"></figure>
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2234.webp" alt="" width="600" height="900"></figure>
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2230.webp" alt="" width="1350" height="900"></figure>
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2447.webp" alt="" width="600" height="900"></figure>
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/Shooting-TR3SMANO-abril-72.webp" alt="" width="1350" height="900"></figure>
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2237.webp" alt="" width="1350" height="900"></figure>
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2468.webp" alt="" width="600" height="900"></figure>
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2254.webp" alt="" width="1350" height="900"></figure>
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/Shooting-TR3SMANO-abril-74.webp" alt="" width="1350" height="900"></figure>
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2476.webp" alt="" width="600" height="900"></figure>
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2269.webp" alt="" width="1350" height="900"></figure>
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/Shooting-TR3SMANO-abril-75.webp" alt="" width="1350" height="900"></figure>
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2427.webp" alt="" width="1350" height="900"></figure>
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2446.webp" alt="" width="1350" height="900"></figure>
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2465.webp" alt="" width="1350" height="900"></figure>
+      <figure data-reveal="img"><img class="lazy" loading="lazy" decoding="async" src="assets/IMG_2485.webp" alt="" width="1350" height="900"></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ VISIT + CLUB ═══ -->
+<section class="visit" id="visit">
+  <div class="vimg"><img class="lazy" loading="lazy" decoding="async" data-parallax="-.04" src="assets/bg-consumoresponsble-tresmano.jpg" alt="Two people walking the vineyard" width="1920" height="1010" style="height:112%;top:-6%"></div>
+  <div class="vtxt">
+    <span class="eyebrow" data-reveal>Signature tours · Private events</span>
+    <h2 class="h-l split">Visit <em>us</em></h2>
+    <p data-reveal>Walk the vineyard, step into the barrel hall and taste at the long table. Tours are bookable online, with private events and tailor-made experiences on request.</p>
+    <ul class="perks" data-reveal><li>Visit + tasting for two — €80</li><li>Live availability calendar</li><li>Private dinners &amp; events</li></ul>
+    <div data-reveal style="display:flex;gap:14px;flex-wrap:wrap"><a class="btn" href="product.html?p=reserva-visita-bodega-cata-dos-personas">Reserve a visit <span class="arrow"></span></a></div>
+    <figure class="map-card" data-reveal style="margin-left:0"><img class="lazy" loading="lazy" src="assets/mapa-tr3smano.png" alt="Map of the area" width="1170" height="792"></figure>
+  </div>
+  <div class="vtxt dark">
+    <span class="eyebrow light" data-reveal>By invitation</span>
+    <h2 class="h-l split">Club <em>Milla</em></h2>
+    <p data-reveal>A private circle for those who follow the wines closely: an exclusive catalogue, members-only experiences and a private purchasing portal.</p>
+    <ul class="perks" data-reveal><li>Invitation-only wholesale &amp; allocations</li><li>Members-only tastings at the winery</li><li>First access to Tm and limited releases</li></ul>
+    <div data-reveal><a class="btn btn--light" href="#">Request an invitation <span class="arrow"></span></a></div>
+  </div>
+  <div class="vimg"><img class="lazy" loading="lazy" decoding="async" src="assets/bg-barricas-bodega-copia.jpg" alt="Barrel hall" width="794" height="744"></div>
+</section>
+
+<div id="footer-mount"></div>
+
+<script src="js/products.js"></script>
+<script src="js/config.js"></script>
+<script src="js/main.js"></script>
+<script>
+(function(){
+  /* featured products */
+  const f = document.getElementById('featured');
+  ['vendimia-2014','albillo-2024','proventus-2022','vh-serie-4'].forEach((id,i)=>{ f.insertAdjacentHTML('beforeend', TM.card(TM.byId(id), i)); });
+  TM.hookLazy(f);
+  /* hero video: only play when visible, honour reduced-motion, toggle control */
+  const v = document.getElementById('heroVideo'), btn = document.getElementById('heroToggle');
+  const sync = () => { document.getElementById('icoPause').style.display = v.paused ? 'none' : ''; document.getElementById('icoPlay').style.display = v.paused ? '' : 'none'; btn.setAttribute('aria-label', v.paused ? 'Play video' : 'Pause video'); };
+  v.addEventListener('playing', () => { v.classList.add('playing'); sync(); });
+  if (TM.reduce) { v.pause(); v.removeAttribute('autoplay'); }
+  btn.onclick = () => { v.paused ? v.play() : v.pause(); sync(); };
+  new IntersectionObserver(([e]) => { if (btn.dataset.user) return; if (!e.isIntersecting) v.pause(); else if (!TM.reduce) v.play().catch(()=>{}); }).observe(v);
+  btn.addEventListener('click', () => btn.dataset.user = 1);
+  sync();
+})();
+</script>
+</body>
+</html>

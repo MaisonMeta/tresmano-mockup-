@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tr3smano Albillo Mayor 2024 — TR3SMANO</title>
+<link rel="icon" href="assets/logo_tr3smano-positivo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-page="shop" data-header="light">
+
+<div class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Home</a><span>/</span><a href="shop.html">Shop</a><span>/</span><a id="crumbCat" href="shop.html">White</a></nav>
+  <div class="pdp" id="pdp"></div>
+</div>
+
+<section class="story" id="story"></section>
+
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head"><h2 class="h-l split">You may also <em>like</em></h2><a class="link" href="shop.html" data-reveal>All wines <span class="arrow"></span></a></div>
+    <div class="pgrid" id="related"></div>
+  </div>
+</section>
+
+<div class="sticky-atc" id="stickyAtc"><div class="n" id="stickyName"></div><button class="btn btn--solid" id="stickyBtn">Add to cart <span class="arrow"></span></button></div>
+
+<div id="footer-mount"></div>
+
+<script src="js/products.js"></script>
+<script src="js/config.js"></script>
+<script src="js/main.js"></script>
+<script>
+(function(){
+  const P = window.PRODUCTS, V = window.VARIANTS;
+  const handle = new URLSearchParams(location.search).get('p') || 'tr3smano-albillo-mayor-2024';
+  const p = P.find(x => x.handle === handle) || P.find(x => x.id === 'albillo-2024');
+  const isAlbillo = p.id === 'albillo-2024', wine = TM.isWine(p);
+  const catName = (CATS.find(c => c[0] === p.cat) || [,'Shop'])[1];
+  document.title = `${p.title} ${p.vintage||''} — TR3SMANO`;
+  const cc = document.getElementById('crumbCat'); cc.textContent = catName; cc.href = 'shop.html?cat=' + p.cat;
+
+  /* gallery */
+  const gal = [{ src:p.img, contain:!p.imgCover }, { src:p.alt, contain:!p.altCover },
+    ...['assets/IMG_2285.webp','assets/Cepa-Antigua-Tresmano.webp','assets/Bodega-Tr3smano_Barricas_Comp.webp'].map(src => ({ src, contain:false }))]
+    .filter((g,i,a) => a.findIndex(x => x.src === g.src) === i);
+
+  const copy = isAlbillo ? {
+    lede:'A white of rare depth. Albillo Mayor from vines between 60 and 100 years old in Olmedillo and La Aguilera, raised nine months in four new French oak barrels — and bottled in just 1,000 units.',
+    notes:'Pale straw with a green edge. Orchard fruit, white flowers and a trace of toasted almond from the oak; the palate is textured and saline, with a long, mineral finish.',
+    facts:[['Grape','100% Albillo Mayor'],['Origin','Olmedillo & La Aguilera · Ribera del Duero D.O.'],['Vines','60 – 100 years old'],['Ageing','9 months · 4 new French oak barrels'],['Production','Limited to 1,000 bottles'],['Format','75 cl']],
+    pair:[['Shellfish','Langoustine, scallop, cold seafood'],['Cheese','Aged Castilian sheep’s cheese'],['Table','Roast chicken, creamy risotto']]
+  } : {
+    lede:p.blurb,
+    notes:'Tasting notes for this wine will be added by the winemaker — this page shows how a full product sheet reads.',
+    facts:[['Producer','Bodega Tresmano'],['Region','Ribera del Duero D.O.'],['Format',wine?'75 cl':'Experience'],['Price',TM.fmt(p.price)+' · IVA incl.']],
+    pair:[['Table','Slow-roast lamb, game'],['Cheese','Aged Castilian cheeses'],['Moment','A long dinner, an open fire']]
+  };
+
+  document.getElementById('pdp').innerHTML = `
+  <div class="gallery" data-reveal="fade">
+    <div class="thumbs" id="thumbs">${gal.map((g,i)=>`<button class="${i?'':'on'}" data-i="${i}" aria-label="Image ${i+1}"><img class="${g.contain?'contain':''}" src="${g.src}" alt="" loading="lazy"></button>`).join('')}</div>
+    <div class="stage ph" id="stage"><img class="cur ${gal[0].contain?'':'cover'}" src="${gal[0].src}" alt="${p.title} ${p.vintage||''}" fetchpriority="high"><span class="hint">Hover to zoom</span><span class="count" id="count">01 / 0${gal.length}</span></div>
+  </div>
+  <div class="buy">
+    <span class="eyebrow" data-reveal>${catName} · Ribera del Duero${p.badge?' · '+p.badge:''}</span>
+    <h1 class="split">${p.title}</h1>
+    <div class="vint" data-reveal>${[p.vintage,p.sub].filter(Boolean).join(' — ')}</div>
+    <p class="lede" data-reveal>${copy.lede}</p>
+    <div class="price-row" data-reveal><b id="price">${TM.fmt(p.price)}</b><small id="perBottle">IVA included · shipping at checkout</small></div>
+    ${wine?`<div class="opt-label">Format <span id="optHint">75 cl</span></div>
+    <div class="opts" id="opts">${Object.entries(V).map(([k,v],i)=>`<button class="opt ${i?'':'on'}" data-v="${k}">${v.off?`<span class="save">Save ${v.off*100}%</span>`:''}${v.label}<small>${v.sub}</small></button>`).join('')}</div>`:''}
+    <div class="buy-row" id="buyRow">
+      <div class="qty"><button id="qm" aria-label="Less">−</button><span id="qv">1</span><button id="qp" aria-label="More">+</button></div>
+      <button class="btn btn--solid" id="addBtn">Add to cart <span class="arrow"></span></button>
+    </div>
+    <button class="btn btn--block" id="buyNow" style="margin-top:10px">Buy now · express checkout</button>
+    <div class="fp">Pay with card · Apple Pay · Google Pay — via Stripe</div>
+    <div class="buy-note">
+      <div><svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.5"/><circle cx="17" cy="17.5" r="1.5"/></svg>Free shipping from €150 · dispatched in 24–48 h</div>
+      <div><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>Carefully packed · breakage covered</div>
+      <div><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="12"/><path d="M12 8v12M3 12h18M8 8c-3-4 2-6 4 0 2-6 7-4 4 0"/></svg>Gift wrapping &amp; note available</div>
+    </div>
+    <div class="acc">
+      <details open><summary>Tasting notes</summary><div class="in">${copy.notes}</div></details>
+      <details><summary>Technical sheet</summary><div class="in"><dl>${copy.facts.map(f=>`<dt>${f[0]}</dt><dd>${f[1]}</dd>`).join('')}</dl></div></details>
+      <details><summary>Delivery &amp; returns</summary><div class="in">Delivery to Spain and the EU. Orders placed before 14:00 ship the next working day. Wines must be received by an adult over 18 — please drink responsibly.</div></details>
+    </div>
+  </div>`;
+
+  /* story + pairings */
+  document.getElementById('story').innerHTML = `
+    <div class="i" data-reveal="img"><img class="lazy" loading="lazy" src="${isAlbillo?'assets/IMG_2223.webp':'assets/Vinedos-Tresmano-3.webp'}" alt="Old vines at Tresmano" width="1350" height="900"></div>
+    <div class="t"><span class="eyebrow light" data-reveal>From the vineyard</span><h2 class="split">Vines that have <em>seen it all.</em></h2>
+    <p data-reveal>${isAlbillo?'Albillo Mayor is the white grape of old Ribera del Duero. These bush vines, some a century old, give very little fruit and a great deal of character.':'Every Tresmano wine begins in the same place: old vines, patient hands and a landscape that does most of the talking.'}</p>
+    <a class="btn btn--light" href="index.html#vineyard" data-reveal>Visit the vineyard <span class="arrow"></span></a></div>`;
+  document.querySelector('.pdp').insertAdjacentHTML('afterend', `<div class="wrap" style="padding-bottom:clamp(40px,6vw,90px)"><div class="eyebrow" style="margin-top:0" data-reveal>At the table</div><div class="pair" style="margin-top:20px" data-reveal>${copy.pair.map(x=>`<div><b>${x[0]}</b><small>${x[1]}</small></div>`).join('')}</div></div>`);
+
+  /* related */
+  const rel = document.getElementById('related');
+  P.filter(x => x.id !== p.id).sort((a,b) => (b.cat===p.cat) - (a.cat===p.cat)).slice(0,4).forEach((x,i)=> rel.insertAdjacentHTML('beforeend', TM.card(x,i)));
+
+  /* gallery behaviour */
+  const stage = document.getElementById('stage'), thumbs = document.getElementById('thumbs'); let cur = 0;
+  function show(i){
+    if (i===cur) return; cur = i; const g = gal[i], old = stage.querySelector('img.cur');
+    const n = document.createElement('img'); n.src = g.src; n.alt = ''; n.className = 'cur out ' + (g.contain?'':'cover');
+    stage.insertBefore(n, stage.firstChild); old.classList.remove('cur'); old.classList.add('out');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ n.classList.remove('out'); }));
+    setTimeout(()=>old.remove(), 700);
+    [...thumbs.children].forEach((b,k)=>b.classList.toggle('on',k===i));
+    document.getElementById('count').textContent = `0${i+1} / 0${gal.length}`;
+  }
+  thumbs.addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (b) show(+b.dataset.i); });
+  stage.addEventListener('mousemove', e => { const r = stage.getBoundingClientRect(); stage.style.setProperty('--ox', ((e.clientX-r.left)/r.width*100)+'%'); stage.style.setProperty('--oy', ((e.clientY-r.top)/r.height*100)+'%'); });
+  stage.addEventListener('mouseenter', () => stage.classList.add('zoom')); stage.addEventListener('mouseleave', () => stage.classList.remove('zoom'));
+  stage.classList.add('done'); stage.firstChild.addEventListener('load', () => stage.classList.remove('ph'));
+
+  /* purchase */
+  let variant = 'x1', qty = 1;
+  const priceEl = document.getElementById('price'), per = document.getElementById('perBottle');
+  function upd(){
+    const u = TM.unit(p, variant) * qty; priceEl.textContent = TM.fmt(u);
+    if (wine && V[variant].n > 1) per.textContent = `${TM.fmt(TM.unit(p,variant)/V[variant].n)} per bottle · IVA included`;
+    else per.textContent = 'IVA included · shipping at checkout';
+    document.getElementById('qv').textContent = qty;
+    document.getElementById('stickyName').innerHTML = `${p.title} ${p.vintage||''}<small>${TM.fmt(u)}</small>`;
+  }
+  document.getElementById('qm').onclick = () => { qty = Math.max(1, qty-1); upd(); };
+  document.getElementById('qp').onclick = () => { qty = Math.min(24, qty+1); upd(); };
+  const opts = document.getElementById('opts');
+  if (opts) opts.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if(!b) return; variant = b.dataset.v; [...opts.children].forEach(c=>c.classList.toggle('on',c===b)); document.getElementById('optHint').textContent = V[variant].n>1 ? `${V[variant].n} × 75 cl` : '75 cl'; upd(); });
+  const addIt = () => TM.add(p.id, variant, qty);
+  document.getElementById('addBtn').onclick = addIt; document.getElementById('stickyBtn').onclick = addIt;
+  document.getElementById('buyNow').onclick = () => window.TM_CHECKOUT([{ id:p.id, variant, qty, unit:TM.unit(p,variant), title:p.title }]);
+  upd();
+  const sticky = document.getElementById('stickyAtc');
+  new IntersectionObserver(([e]) => sticky.classList.toggle('show', !e.isIntersecting && e.boundingClientRect.top < 0)).observe(document.getElementById('buyRow'));
+
+  TM.hookLazy(); TM.hookReveal();
+})();
+</script>
+</body>
+</html>
