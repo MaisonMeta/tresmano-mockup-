@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add('js')</script>
-<link rel="stylesheet" href="css/styles.css?v=4">
+<link rel="stylesheet" href="css/styles.css?v=5">
 <style>
 .cgrid{display:grid;grid-template-columns:5fr 7fr;gap:clamp(30px,6vw,120px);padding-bottom:clamp(80px,10vw,150px)}
 .cinfo p{color:#463f37;max-width:36ch;margin-bottom:34px}.cinfo h3{font-size:26px;margin-bottom:6px}
@@ -34,7 +34,7 @@
     <div class="ok" id="ok"><span class="eyebrow">Thank you</span><h2>Message sent.</h2><p style="color:#463f37">We will reply by email shortly. (Demo: it is now in Admin → Inbox.)</p><p style="margin-top:26px"><a class="link" href="./">Back to home <span class="arrow"></span></a></p></div></div>
 </div></main>
 <div id="footer-mount"></div>
-<script src="js/products.js?v=4"></script><script src="js/db.js?v=4"></script><script src="js/config.js?v=4"></script><script src="js/main.js?v=4"></script>
+<script src="js/products.js?v=5"></script><script src="js/db.js?v=5"></script><script src="js/config.js?v=5"></script><script src="js/main.js?v=5"></script>
 <script>
 document.getElementById('cf').onsubmit = e => { e.preventDefault(); const f = new FormData(e.target);
   TM_DB.db.messages.push({ id:TM_DB.uid('m'), name:f.get('name'), email:f.get('email'), topic:f.get('topic'), message:f.get('message'), date:TM_DB.iso(new Date()), status:'new' }); TM_DB.save();

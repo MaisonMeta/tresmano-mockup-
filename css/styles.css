@@ -268,7 +268,9 @@ section{position:relative}
 .pcard-media img.cover{object-fit:cover;padding:0;mix-blend-mode:normal}
 .pcard-media img.lazy.alt{opacity:0}
 .pcard:hover .pcard-media img.lazy.alt.loaded{opacity:1}
-.pcard:hover .pcard-media .main{transform:scale(1.04)}
+.pcard:hover .pcard-media img.lazy.main.loaded{opacity:0}
+.pcard-media{isolation:isolate}
+.pcard:hover .pcard-media img.alt{transform:scale(1.03)}
 .pcard-badge{position:absolute;top:12px;left:12px;z-index:3;background:var(--ink);color:var(--paper);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;padding:6px 10px}
 .pcard-badge.copper{background:var(--copper)}
 .quick-add{position:absolute;left:10px;right:10px;bottom:10px;z-index:3;background:rgba(243,239,231,.96);padding:14px;font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;font-weight:400;text-align:center;transform:translateY(calc(100% + 16px));transition:transform .6s var(--ease),background .3s,color .3s}
