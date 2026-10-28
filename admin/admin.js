@@ -6,19 +6,20 @@
   const img = s => !s ? '' : /^(data:|https?:)/.test(s) ? s : '../' + s;
   const fdate = (d, o) => new Date(d + 'T12:00:00').toLocaleDateString('en-GB', o || { day:'numeric', month:'short' });
   const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
-  const I = { home:'M3 11l9-7 9 7v9H3zM9 20v-6h6v6', box:'M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10', bag:'M5 8h14l-1 12H6zM9 8V6a3 3 0 016 0v2', cal:'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4', pen:'M4 20l1-5L16 4l4 4L9 19zM14 6l4 4', mail:'M3 6h18v13H3zM3 7l9 7 9-7' };
+  const I = { home:'M3 11l9-7 9 7v9H3zM9 20v-6h6v6', box:'M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10', bag:'M5 8h14l-1 12H6zM9 8V6a3 3 0 016 0v2', cal:'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4', pen:'M4 20l1-5L16 4l4 4L9 19zM14 6l4 4', mail:'M3 6h18v13H3zM3 7l9 7 9-7', users:'M16 20v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2M9.5 10a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM21 20v-2a4 4 0 00-3-3.9M16 3.1a3.5 3.5 0 010 6.8' };
   const NAV = [['index','Dashboard','home'], ['products','Products & stock','box'], ['orders','Orders','bag'], ['tours','Tours & RSVP','cal'], ['journal','Journal','pen'], ['inbox','Inbox','mail']];
 
   /* ── shell ── */
   const page = document.body.dataset.page, main = document.getElementById('main');
   const unread = db.messages.filter(m => m.status === 'new').length, pending = db.tours.reduce((a, t) => a + t.rsvps.filter(r => r.status === 'pending').length, 0);
   const badge = { inbox:unread, tours:pending };
+  const hr = new Date().getHours(), greeting = (hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening') + ', Johnathan';
   const wrap = document.createElement('div'); wrap.className = 'layout';
   wrap.innerHTML = `<aside class="side"><div class="brand"><img src="../assets/logo_tr3smanox2.png" alt="TR3SMANO"><small>Back office · POC</small></div>
-    <nav>${NAV.map(n => `<a href="${n[0]==='index'?'./':n[0]}" class="${page === n[0] ? 'on' : ''}"><svg viewBox="0 0 24 24"><path d="${I[n[2]]}"/></svg>${n[1]}${badge[n[0]] ? `<span class="badge">${badge[n[0]]}</span>` : ''}</a>`).join('')}</nav>
+    <nav>${NAV.map(n => `<a href="${n[0]==='index'?'./':n[0]}" class="${page === n[0] ? 'on' : ''}"><svg viewBox="0 0 24 24"><path d="${I[n[2]]}"/></svg>${n[1]}${badge[n[0]] ? `<span class="badge">${badge[n[0]]}</span>` : ''}</a>`).join('')}<span class="off" aria-disabled="true" title="Coming soon"><svg viewBox="0 0 24 24"><path d="${I.users}"/></svg>Users<span class="badge soon">Soon</span></span></nav>
     <div class="foot"><div class="poc">Proof of concept. Demo data lives in this browser only and is shared with the storefront.</div>
       <a href="../" target="_blank">View storefront ↗</a><a href="../shop" target="_blank">View shop ↗</a><a class="credit" href="https://maisonmeta.io" target="_blank" rel="noopener">Custom Backend Demo<br>by <b>Maison Meta</b> ↗</a></div></aside>
-    <div class="content"><div class="top"><div><h1>${esc(document.body.dataset.title)}</h1><div class="sub">${esc(document.body.dataset.sub || '')}</div></div><div class="acts" id="acts"></div></div></div>`;
+    <div class="content"><div class="top"><div><h1>${esc(document.body.dataset.title === '__greeting' ? greeting : document.body.dataset.title)}</h1><div class="sub">${esc(document.body.dataset.sub || '')}</div></div><div class="acts" id="acts"></div></div></div>`;
   document.body.prepend(wrap); $('.content', wrap).append(main);
   document.body.insertAdjacentHTML('beforeend', `<div class="scrim" id="scrim"></div><aside class="panel" id="panel"><div class="panel-h"><h2 id="panelT"></h2><button class="btn sm ghost" id="panelX">Close ✕</button></div><div class="panel-b" id="panelB"></div><div class="panel-f" id="panelF"></div></aside><div class="modal" id="modal"></div><div class="toast" id="toast"></div>`);
 

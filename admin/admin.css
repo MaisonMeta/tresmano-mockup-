@@ -138,3 +138,5 @@ label.f{display:block;font-size:10.5px;letter-spacing:.2em;text-transform:upperc
 }
 
 .side .foot .credit{margin-top:8px;padding:12px;border:1px solid rgba(255,255,255,.14);font-size:11px;line-height:1.5;color:rgba(255,255,255,.6);letter-spacing:.04em}.side .foot .credit b{font-weight:500;color:#fff}.side .foot .credit:hover{border-color:var(--copper);color:#fff}
+
+.side nav .off{display:flex;align-items:center;gap:12px;padding:11px 12px;font-size:13px;color:rgba(255,255,255,.32);cursor:not-allowed;border-left:2px solid transparent;user-select:none}.side nav .off svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.4;flex:none}.side nav .badge.soon{margin-left:auto;background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;border-radius:20px;padding:1px 8px}
