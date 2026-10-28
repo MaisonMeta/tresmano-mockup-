@@ -13,7 +13,7 @@
   const page = document.body.dataset.page, main = document.getElementById('main');
   const unread = db.messages.filter(m => m.status === 'new').length, pending = db.tours.reduce((a, t) => a + t.rsvps.filter(r => r.status === 'pending').length, 0);
   const badge = { inbox:unread, tours:pending };
-  const hr = new Date().getHours(), greeting = (hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening') + ', Jonathan';
+  const hr = new Date().getHours(), greeting = 'Buenas tardes, Laura';
   const wrap = document.createElement('div'); wrap.className = 'layout';
   wrap.innerHTML = `<aside class="side"><div class="brand"><img src="../assets/logo_tr3smanox2.png" alt="TR3SMANO"><small>Back office · POC</small></div>
     <nav>${NAV.map(n => `<a href="${n[0]==='index'?'./':n[0]}" class="${page === n[0] ? 'on' : ''}"><svg viewBox="0 0 24 24"><path d="${I[n[2]]}"/></svg>${n[1]}${badge[n[0]] ? `<span class="badge">${badge[n[0]]}</span>` : ''}</a>`).join('')}<span class="off" aria-disabled="true" title="Coming soon"><svg viewBox="0 0 24 24"><path d="${I.users}"/></svg>Users<span class="badge soon">Soon</span></span></nav>
