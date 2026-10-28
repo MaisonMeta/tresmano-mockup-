@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Visit us — TR3SMANO</title>
+<link rel="icon" href="assets/logo_tr3smano-positivo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+.slot{display:grid;grid-template-columns:120px 1fr auto;gap:clamp(18px,3vw,48px);align-items:center;padding:28px 0;border-top:1px solid var(--line);transition:background .4s}
+.slot:hover{background:rgba(255,255,255,.4)}
+.slot .dt{font-family:var(--serif);font-size:clamp(44px,5vw,72px);line-height:.9;font-weight:300}.slot .dt small{display:block;font-family:var(--sans);font-size:10.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+.slot h3{font-size:clamp(26px,2.6vw,38px);font-weight:400;margin-bottom:6px}.slot p{color:#463f37;max-width:54ch;font-size:15px}
+.slot .meta{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+.slot .go{text-align:right;display:grid;gap:10px;justify-items:end}.slot .go b{font-family:var(--serif);font-weight:400;font-size:30px}.slot .go small{color:var(--muted);font-size:12px}
+@media(max-width:760px){.slot{grid-template-columns:80px 1fr}.slot .go{grid-column:1/-1;justify-items:start;text-align:left}}
+.month{font-family:var(--serif);font-style:italic;font-size:clamp(28px,3vw,44px);color:var(--copper);padding:44px 0 8px}
+.mbg{position:fixed;inset:0;background:rgba(10,8,6,.55);z-index:300;opacity:0;visibility:hidden;transition:opacity .4s,visibility .4s}
+.mdl{position:fixed;left:50%;top:50%;transform:translate(-50%,-46%);width:min(520px,calc(100vw - 28px));max-height:92vh;overflow:auto;background:var(--paper);z-index:310;padding:34px;opacity:0;visibility:hidden;transition:all .5s var(--ease)}
+.on.mbg{opacity:1;visibility:visible}.on.mdl{opacity:1;visibility:visible;transform:translate(-50%,-50%)}
+.mdl h2{font-size:38px;font-weight:300;margin:10px 0 4px}.mdl .sub{color:var(--muted);font-size:14px;margin-bottom:20px}
+.fld{display:block;margin-bottom:14px}.fld span{display:block;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-weight:400}
+.fld input,.fld select,.fld textarea{width:100%;font:inherit;background:#fff;border:1px solid var(--line);padding:13px 14px;outline:none;border-radius:0;color:var(--ink)}.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--ink)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.done{text-align:center;padding:20px 0}.done h2{margin-bottom:12px}
+</style>
+</head>
+<body data-page="visit" data-header="light">
+<section class="page-hero">
+  <div class="ph-img"><img src="assets/Bodega-Tr3smano_Catas2_Comp.jpg" alt="" width="1920" height="1280"></div>
+  <div class="wrap"><span class="eyebrow" data-reveal>Signature tours · Private events</span><h1 class="h-xl split">Visit <em>us</em></h1>
+  <p data-reveal>Choose a date and request your places. We confirm every booking personally by email — the calendar below is live from the back office.</p></div>
+</section>
+<main class="wrap" style="padding-bottom:clamp(80px,10vw,150px)"><div id="slots"></div></main>
+
+<div class="mbg" id="mbg"></div><div class="mdl" id="mdl"></div>
+<div id="footer-mount"></div>
+<script src="js/products.js"></script><script src="js/db.js"></script><script src="js/config.js"></script><script src="js/main.js"></script>
+<script>
+(function(){
+  const db = TM_DB.db, today = TM_DB.iso(new Date());
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const taken = t => t.rsvps.filter(r => r.status !== 'declined').reduce((a, r) => a + r.guests, 0);
+  const slots = db.tours.filter(t => t.date >= today).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  let last = '';
+  document.getElementById('slots').innerHTML = slots.map(t => {
+    const d = new Date(t.date + 'T12:00:00'), m = d.toLocaleDateString('en-GB', { month:'long', year:'numeric' }), left = t.capacity - taken(t);
+    const head = m !== last ? `<div class="month">${m}</div>` : ''; last = m;
+    return head + `<article class="slot" data-reveal><div class="dt">${d.getDate()}<small>${d.toLocaleDateString('en-GB',{weekday:'short'})} · ${t.time}</small></div>
+      <div><h3>${esc(t.type)}</h3><p>${esc(t.notes || '')}</p><div class="meta">${left > 0 ? left + ' places left' : 'Fully booked — join the waitlist'} · max ${t.capacity} guests</div></div>
+      <div class="go"><b>€${t.price}<small> / person</small></b><button class="btn ${left > 0 ? 'btn--solid' : ''}" data-id="${t.id}">${left > 0 ? 'Request places' : 'Join waitlist'} <span class="arrow"></span></button></div></article>`;
+  }).join('') || '<p style="padding:60px 0;color:var(--muted)">No dates are open right now — please write to us via the contact page.</p>';
+  TM.hookReveal(document.getElementById('slots'));
+
+  const mbg = document.getElementById('mbg'), mdl = document.getElementById('mdl');
+  const close = () => { mbg.classList.remove('on'); mdl.classList.remove('on'); };
+  mbg.onclick = close; addEventListener('keydown', e => e.key === 'Escape' && close());
+  document.getElementById('slots').onclick = e => {
+    const b = e.target.closest('[data-id]'); if (!b) return; const t = db.tours.find(x => x.id === b.dataset.id), left = Math.max(0, t.capacity - taken(t));
+    const d = new Date(t.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long' });
+    mdl.innerHTML = `<span class="eyebrow">${left > 0 ? 'Request places' : 'Waitlist'}</span><h2>${esc(t.type)}</h2><div class="sub">${d} · ${t.time} · €${t.price} per person</div>
+      <form id="rf"><div class="two"><label class="fld"><span>Name</span><input name="name" required></label><label class="fld"><span>Guests</span><select name="guests">${Array.from({length:Math.min(8,t.capacity)},(_, i)=>`<option>${i+1}</option>`).join('')}</select></label></div>
+      <label class="fld"><span>Email</span><input type="email" name="email" required></label><label class="fld"><span>Anything we should know?</span><textarea name="note" rows="3" placeholder="Celebration, dietary needs…"></textarea></label>
+      <button class="btn btn--solid btn--block" type="submit">Send request <span class="arrow"></span></button></form>`;
+    mbg.classList.add('on'); mdl.classList.add('on');
+    document.getElementById('rf').onsubmit = ev => { ev.preventDefault(); const f = new FormData(ev.target);
+      t.rsvps.push({ id:TM_DB.uid('r'), name:f.get('name'), email:f.get('email'), guests:+f.get('guests'), status:'pending', note:f.get('note') || '', created:today }); TM_DB.save();
+      mdl.innerHTML = `<div class="done"><span class="eyebrow">Thank you</span><h2>Request received</h2><p style="color:#463f37">We will confirm your places by email. (Demo: it now shows as <b>Pending</b> in Admin → Tours &amp; RSVP.)</p><p style="margin-top:24px"><button class="btn" id="cl">Close</button></p></div>`; document.getElementById('cl').onclick = () => { close(); location.reload(); }; };
+  };
+})();
+</script>
+</body></html>

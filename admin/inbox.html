@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Inbox — TR3SMANO Admin</title><link rel="icon" href="../assets/logo_tr3smano-positivo.png">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css"></head>
+<body data-page="inbox" data-title="Inbox" data-sub="Messages from the storefront contact form."><main id="main"></main>
+<script src="../js/products.js"></script><script src="../js/db.js"></script><script src="admin.js"></script>
+<script>
+(function(){
+  const {db,esc,fdate,pill,$,D} = A;
+  let tab='all', cur=null;
+  A.acts('<a class="btn" href="../contact" target="_blank">Public contact form ↗</a>');
+  $('#main').innerHTML='<div class="toolbar"><div class="tabs" id="tabs"></div></div><div class="inbox"><div class="msgs" id="msgs"></div><div class="mview" id="mv"></div></div>';
+  const TABS=[['all','Inbox'],['new','Unread'],['replied','Replied'],['archived','Archived']];
+  const vis=m=>tab==='all'?m.status!=='archived':m.status===tab;
+  const sorted=()=>db.messages.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  function list(){
+    $('#tabs').innerHTML=TABS.map(t=>`<button data-t="${t[0]}" class="${tab===t[0]?'on':''}">${t[1]}<small>${db.messages.filter(m=>t[0]==='all'?m.status!=='archived':m.status===t[0]).length}</small></button>`).join('');
+    $('#msgs').innerHTML=sorted().filter(vis).map(m=>`<div class="msg ${m.status==='new'?'unread':''} ${cur===m.id?'on':''}" data-id="${m.id}"><b><span>${esc(m.name)}</span><small>${fdate(m.date)}</small></b><small>${esc(m.topic)} — ${esc(m.message)}</small></div>`).join('')||'<div class="empty">Nothing here.</div>';
+  }
+  function view(){
+    const m=db.messages.find(x=>x.id===cur);
+    if(!m){ $('#mv').innerHTML='<div class="empty" style="padding-top:120px">Select a message to read it.</div>'; return; }
+    $('#mv').innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><h2>${esc(m.name)}</h2><div style="color:var(--muted)">${esc(m.email)} · ${fdate(m.date,{day:'numeric',month:'long',year:'numeric'})}</div></div><div>${pill(m.status==='new'?'new':m.status)} ${A.pill('draft',m.topic)}</div></div>
+      <div class="body">${esc(m.message)}</div>
+      ${m.reply?`<label class="f">Your reply</label><div class="body" style="border-color:var(--copper)">${esc(m.reply)}</div>`:`<label class="f">Reply</label><textarea id="rp" rows="5" placeholder="Write a reply to ${esc(m.name.split(' ')[0])}…"></textarea>`}
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">${m.reply?'':'<button class="btn solid" id="send">Send reply</button>'}<button class="btn ghost" id="unread">Mark unread</button><button class="btn ghost" id="arch">${m.status==='archived'?'Move to inbox':'Archive'}</button><button class="btn danger" id="del" style="margin-left:auto">Delete</button></div>`;
+    if(!m.reply) $('#send').onclick=()=>{ const t=$('#rp').value.trim(); if(!t) return A.toast('Write a reply first'); m.reply=t; m.status='replied'; A.save(); A.toast('Reply sent (mock) to '+m.email); all(); };
+    $('#unread').onclick=()=>{m.status='new';A.save();all();}; $('#arch').onclick=()=>{m.status=m.status==='archived'?'read':'archived';A.save();all();};
+    $('#del').onclick=()=>A.confirm('Delete this message?',()=>{db.messages=db.messages.filter(x=>x.id!==m.id);D.db.messages=db.messages;cur=null;A.save();all();},'Delete');
+  }
+  const all=()=>{list();view();};
+  $('#tabs').onclick=e=>{const b=e.target.closest('[data-t]'); if(b){tab=b.dataset.t;cur=null;all();}};
+  $('#msgs').onclick=e=>{const r=e.target.closest('[data-id]'); if(!r) return; cur=r.dataset.id; const m=db.messages.find(x=>x.id===cur); if(m.status==='new'){m.status='read';A.save();} all();};
+  all();
+})();
+</script></body></html>

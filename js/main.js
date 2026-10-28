@@ -9,14 +9,14 @@
   const byId = id => P.find(p => p.id === id);
 
   /* ── chrome ── */
-  const nav = [['the-wine','The Wine','index.html#wines'],['vineyard','The Vineyard','index.html#vineyard'],['winery','The Winery','index.html#winery'],['history','Our History','index.html#film'],['shop','Shop','shop.html'],['visit','Visit Us','index.html#visit'],['contact','Contact','#contact']];
+  const nav = [['the-wine','The Wine','./#wines'],['vineyard','The Vineyard','./#vineyard'],['winery','The Winery','./#winery'],['journal','Journal','journal'],['shop','Shop','shop'],['visit','Visit Us','tours'],['contact','Contact','contact']];
   const link = n => `<a href="${n[2]}" ${page===n[0]?'aria-current="page"':''}>${n[1]}</a>`;
   const navL = nav.slice(0,4).map(link).join(''), navR = nav.slice(4).map(link).join('');
   const lightTop = document.body.dataset.header === 'light';
   document.body.insertAdjacentHTML('afterbegin', `
   <header class="site-header ${lightTop?'on-light':''}" id="header">
     <nav class="nav" aria-label="Main">${navL}</nav>
-    <a class="logo" href="index.html" aria-label="Tr3smano — home">
+    <a class="logo" href="./" aria-label="Tr3smano — home">
       <img class="light-logo" src="assets/logo_tr3smanox2.png" alt="TR3SMANO" width="274" height="25">
       <img class="dark-logo" src="assets/logo_tr3smano-positivox2.png" alt="" width="274" height="25">
     </a>
@@ -50,15 +50,15 @@
     <div class="wrap">
       <div class="footer-top">
         <div class="brandcol"><img class="lazy" loading="lazy" src="assets/logo_tr3smanox2.png" alt="TR3SMANO" width="274" height="25"><p>We honour our origin by dedicating time and heart to create unique experiences. Ribera del Duero · Denominación de Origen.</p></div>
-        <div><h4>Explore</h4><ul><li><a href="index.html#wines">The Wine</a></li><li><a href="index.html#vineyard">The Vineyard</a></li><li><a href="index.html#winery">The Winery</a></li><li><a href="index.html#film">Our History</a></li></ul></div>
-        <div><h4>Shop</h4><ul><li><a href="shop.html">All wines</a></li><li><a href="shop.html?cat=collection">Collections</a></li><li><a href="shop.html?cat=experience">Experiences</a></li><li><a href="#">Gift cards</a></li><li><a href="#">Club Milla</a></li></ul></div>
-        <div><h4>Visit</h4><ul><li><a href="index.html#visit">Tours &amp; tastings</a></li><li><a href="#">Private events</a></li><li><a href="#">Find a retailer</a></li><li><a href="#">hello@tresmano.com</a></li></ul></div>
+        <div><h4>Explore</h4><ul><li><a href="./#wines">The Wine</a></li><li><a href="./#vineyard">The Vineyard</a></li><li><a href="./#winery">The Winery</a></li><li><a href="./#film">Our History</a></li><li><a href="journal">Journal</a></li></ul></div>
+        <div><h4>Shop</h4><ul><li><a href="shop">All wines</a></li><li><a href="shop?cat=collection">Collections</a></li><li><a href="shop?cat=experience">Experiences</a></li><li><a href="#">Gift cards</a></li><li><a href="#">Club Milla</a></li></ul></div>
+        <div><h4>Visit</h4><ul><li><a href="tours">Tours &amp; tastings</a></li><li><a href="contact">Private events</a></li><li><a href="contact">Contact</a></li><li><a href="admin/">Admin (POC)</a></li></ul></div>
       </div>
     </div>
     <div class="footer-word" aria-hidden="true">TR3SMANO</div>
     <div class="wrap"><div class="footer-bottom">
       <div class="logos"><img class="lazy" loading="lazy" src="assets/logo-wine-in-moderation.png" alt="Wine in Moderation"><img class="lazy" loading="lazy" src="assets/LOGO-NOS-IMPULSA-BODEGA-TRESMANO.png" alt="Nos impulsa"><img class="lazy" loading="lazy" src="assets/LOGO_ICECYLJUNTAC_CYL-BODEGA-TRESMANO.png" alt="ICE · Junta de Castilla y León"></div>
-      <div>© 2026 Bodega Tresmano · <a href="#">Legal</a> · <a href="#">Privacy</a> · <a href="#">Cookies</a> · <a href="#">Terms of sale</a></div>
+      <div><a href="https://maisonmeta.io" target="_blank" rel="noopener" style="border-bottom:1px solid rgba(255,255,255,.3);padding-bottom:1px;margin-right:18px">Custom Backend Demo by Maison Meta</a>© 2026 Bodega Tresmano · <a href="#">Legal</a> · <a href="#">Privacy</a> · <a href="#">Cookies</a> · <a href="#">Terms of sale</a></div>
     </div></div>
   </footer>`;
   const fmount = $('#footer-mount'); if (fmount) fmount.outerHTML = footerHtml;
@@ -90,7 +90,7 @@
   let cart = []; try { cart = JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch (e) {} };
   const unit = (p, v) => +(p.price * V[v].n * (1 - V[v].off)).toFixed(2);
-  const isWine = p => !['experience'].includes(p.cat);
+  const isWine = p => ['red','white','magnum','collection','selected'].includes(p.cat);
   const open = on => { document.body.classList.toggle('cart-open', on); $('#drawer').setAttribute('aria-hidden', !on); };
   function add(id, variant = 'x1', qty = 1, openDrawer = true) {
     const l = cart.find(c => c.id === id && c.variant === variant);
@@ -98,6 +98,7 @@
     save(); render(); const c = $('#cartCount'); c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump');
     if (openDrawer) open(true);
   }
+  function clear() { cart = []; save(); render(); }
   function render() {
     const body = $('#cartBody'), foot = $('#cartFoot');
     const count = cart.reduce((s, l) => s + l.qty, 0);
@@ -109,7 +110,7 @@
         <div><h4>${p.title} ${p.vintage||''}</h4><small>${isWine(p)?V[l.variant].label:p.sub}</small>
         <div class="qty"><button data-q="-1" data-i="${i}" aria-label="Less">−</button><span>${l.qty}</span><button data-q="1" data-i="${i}" aria-label="More">+</button></div>
         <button class="rm" data-rm="${i}">Remove</button></div><div class="price">${fmt(u * l.qty)}</div></div>`;
-    }).join('') : `<div class="drawer-empty"><h4>Nothing here yet</h4><p>Begin with a bottle from the vineyard.</p><p style="margin-top:28px"><a class="link" href="shop.html">Browse the shop <span class="arrow"></span></a></p></div>`;
+    }).join('') : `<div class="drawer-empty"><h4>Nothing here yet</h4><p>Begin with a bottle from the vineyard.</p><p style="margin-top:28px"><a class="link" href="shop">Browse the shop <span class="arrow"></span></a></p></div>`;
     foot.style.display = cart.length ? '' : 'none';
     foot.innerHTML = `<div class="sub-row"><span>Subtotal</span><b>${fmt(sub)}</b></div><small>IVA included · shipping calculated at checkout</small>
       <button class="btn btn--solid btn--block" id="checkoutBtn">Checkout <span class="arrow"></span></button>
@@ -131,15 +132,15 @@
 
   /* ── product card template (shop + home + related) ── */
   function card(p, i = 0) {
-    const cls = (c) => c ? 'cover' : 'main';
+    const out = p.stock && p.stock.shop === 0;
     return `<article class="pcard" data-cat="${p.cat}" style="--d:${Math.min(i,11)*.05}s">
-      <a class="pcard-media ph" href="product.html?p=${p.handle}" aria-label="${p.title} ${p.vintage||''}">
-        ${p.badge ? `<span class="pcard-badge ${p.badge==='Limited'||p.badge==='New vintage'?'copper':''}">${p.badge}</span>` : ''}
+      <a class="pcard-media ph" href="product?p=${p.handle}" aria-label="${p.title} ${p.vintage||''}">
+        ${out ? `<span class="pcard-badge">Sold out</span>` : p.badge ? `<span class="pcard-badge ${p.badge==='Limited'||p.badge==='New vintage'?'copper':''}">${p.badge}</span>` : ''}
         <img class="lazy main ${p.imgCover?'cover':''}" loading="lazy" decoding="async" src="${p.img}" alt="${p.title} ${p.vintage||''}">
-        <img class="lazy alt ${p.altCover?'cover':''}" loading="lazy" decoding="async" src="${p.alt}" alt="">
-        <button class="quick-add" data-add="${p.id}" onclick="event.preventDefault()">Quick add — ${fmt(p.price)}</button>
+        <img class="lazy alt ${p.altCover?'cover':''}" loading="lazy" decoding="async" src="${p.alt||p.img}" alt="">
+        ${out ? `<span class="quick-add" style="opacity:.7">Sold out</span>` : `<button class="quick-add" data-add="${p.id}" onclick="event.preventDefault()">Quick add — ${fmt(p.price)}</button>`}
       </a>
-      <div class="pcard-info"><h3><a href="product.html?p=${p.handle}">${p.title} <span class="serif-i" style="color:var(--copper)">${p.vintage||''}</span></a><span class="sub">${p.sub}</span></h3><span class="price">${fmt(p.price)}</span></div>
+      <div class="pcard-info"><h3 ${out?'style="opacity:.55"':''}><a href="product?p=${p.handle}">${p.title} <span class="serif-i" style="color:var(--copper)">${p.vintage||''}</span></a><span class="sub">${p.sub}</span></h3><span class="price">${fmt(p.price)}</span></div>
     </article>`;
   }
   document.addEventListener('click', e => { const a = e.target.closest('[data-add]'); if (a) { e.preventDefault(); add(a.dataset.add); } });
@@ -193,7 +194,7 @@
     });
   }
 
-  window.TM = { add, fmt, toast, card, hookLazy, hookReveal, hookDrag, byId, unit, open, reduce, isWine };
+  window.TM = { clear, add, fmt, toast, card, hookLazy, hookReveal, hookDrag, byId, unit, open, reduce, isWine };
   document.dispatchEvent(new Event('tm-ready'));
   hookLazy(); hookReveal(); hookDrag();
 })();

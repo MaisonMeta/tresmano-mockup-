@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Dashboard — TR3SMANO Admin</title><link rel="icon" href="../assets/logo_tr3smano-positivo.png">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css"></head>
+<body data-page="index" data-title="Good morning" data-sub="Online shop and winery counter, side by side."><main id="main"></main>
+<script src="../js/products.js"></script><script src="../js/db.js"></script><script src="admin.js"></script>
+<script>
+(function(){
+  const {db,eur,esc,fdate,pill,thumb,$,D} = A, today = D.iso(new Date());
+  let ch = 'all';
+  A.acts('<a class="btn" href="products?new=1">+ New product</a><a class="btn" href="orders?sale=1">+ In-store sale</a><a class="btn solid" href="tours">Add tour slot</a>');
+  const days = Array.from({length:30},(_,i)=>D.day(i-29));
+  const seatsTaken = t => t.rsvps.filter(r=>r.status!=='declined').reduce((a,r)=>a+r.guests,0);
+  const sum = (os, f) => os.reduce((a,o)=>a+f(o),0);
+  const bottles = os => sum(os, o=>o.lines.reduce((b,l)=>{const p=A.productById(l.id);return b+(p&&D.isWine(p)?l.qty:0)},0));
+  const pct = (a,b) => b ? Math.round(a/b*100) : 0;
+
+  function draw(){
+    const valid = db.orders.filter(o=>o.status!=='refunded');
+    const on = valid.filter(o=>o.channel==='online'), off = valid.filter(o=>o.channel==='instore');
+    const cur = ch==='all' ? valid : ch==='online' ? on : off;
+    const rev = sum(cur,o=>o.total), n = cur.length;
+    const R = { all:sum(valid,o=>o.total), on:sum(on,o=>o.total), off:sum(off,o=>o.total) };
+    const dayRev = (os,d)=>sum(os.filter(o=>o.date===d),o=>o.total);
+    const bars = days.map(d=>({d, on:ch==='instore'?0:dayRev(on,d), off:ch==='online'?0:dayRev(off,d)}));
+    const max = Math.max(...bars.map(b=>b.on+b.off),1);
+    const low = db.products.filter(p=>p.status==='active' && p.stock && p.stock.shop!=null && p.stock.shop<=8);
+    const drafts = db.products.filter(p=>p.status==='draft' && p.stock && p.stock.cellar>0);
+    const upcoming = db.tours.filter(t=>t.date>=today).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,5);
+    const pend = db.tours.reduce((a,t)=>a+t.rsvps.filter(r=>r.status==='pending').length,0), unread = db.messages.filter(m=>m.status==='new').length;
+    const units = {}; cur.forEach(o=>o.lines.forEach(l=>units[l.id]=(units[l.id]||0)+l.qty));
+    const top = Object.entries(units).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id,q])=>[A.productById(id),q]).filter(x=>x[0]);
+    const wines = db.products.filter(p=>D.isWine(p) && p.stock && p.stock.shop!=null), mx = Math.max(...wines.map(p=>A.totalStock(p)),1);
+    const recent = db.orders.filter(o=>ch==='all'||o.channel===(ch==='online'?'online':'instore')).sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id)).slice(0,6);
+    const cardPay = sum(off.filter(o=>/card/i.test(o.payment)),o=>o.total), cashPay = sum(off.filter(o=>/cash/i.test(o.payment)),o=>o.total);
+    const label = {all:'all channels',online:'online',instore:'in-store'}[ch];
+
+    $('#main').innerHTML = `
+    <div class="toolbar"><div class="tabs" id="chTabs">${[['all','All sales'],['online','Online shop'],['instore','In-store']].map(t=>`<button data-c="${t[0]}" class="${ch===t[0]?'on':''}">${t[1]}</button>`).join('')}</div><span class="hint" style="margin-left:auto;color:var(--muted)">Last 30 days · refunds excluded</span></div>
+    <div class="grid g4">
+      <div class="card kpi"><small>Revenue · ${label}</small><b>${eur(rev)}</b><span>${n} orders</span></div>
+      <div class="card kpi"><small>Orders</small><b>${n}</b><span>${ch==='instore'?'completed at the counter':db.orders.filter(o=>o.status==='paid').length+' online to ship'}</span></div>
+      <div class="card kpi"><small>Avg. order value</small><b>${eur(Math.round(rev/Math.max(n,1)))}</b><span>${ch==='online'?'free shipping from €150':'IVA included'}</span></div>
+      <div class="card kpi"><small>Bottles sold</small><b>${bottles(cur)}</b><span>wines &amp; collections</span></div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1.1fr 1.4fr;margin-top:18px" id="split">
+      <div class="card"><div class="card-h"><h3>Online vs in-store</h3><span class="hint">share of revenue</span></div>
+        <div style="display:flex;height:14px;margin:6px 0 16px"><i style="flex:${R.on||1};background:var(--copper)"></i><i style="flex:${R.off||1};background:var(--wine)"></i></div>
+        <table class="tbl"><thead><tr><th></th><th class="r">Revenue</th><th class="r">Orders</th><th class="r">AOV</th><th class="r">Bottles</th></tr></thead><tbody>
+          <tr><td><i style="display:inline-block;width:10px;height:10px;background:var(--copper);margin-right:8px"></i>Online shop</td><td class="r">${eur(R.on)} <small style="color:var(--muted)">${pct(R.on,R.all)}%</small></td><td class="r">${on.length}</td><td class="r">${eur(Math.round(R.on/Math.max(on.length,1)))}</td><td class="r">${bottles(on)}</td></tr>
+          <tr><td><i style="display:inline-block;width:10px;height:10px;background:var(--wine);margin-right:8px"></i>In-store</td><td class="r">${eur(R.off)} <small style="color:var(--muted)">${pct(R.off,R.all)}%</small></td><td class="r">${off.length}</td><td class="r">${eur(Math.round(R.off/Math.max(off.length,1)))}</td><td class="r">${bottles(off)}</td></tr></tbody></table>
+        <p class="hint" style="margin:14px 0 0;color:var(--muted)">In-store payments: ${eur(cardPay)} card · ${eur(cashPay)} cash. One location, one shared stock.</p></div>
+      <div class="card"><div class="card-h"><h3>Daily revenue</h3><span class="hint"><i style="display:inline-block;width:9px;height:9px;background:var(--copper);margin-right:5px"></i>Online <i style="display:inline-block;width:9px;height:9px;background:var(--wine);margin:0 5px 0 12px"></i>In-store</span></div>
+        <div class="chart" style="gap:4px">${bars.map(b=>`<div style="height:${Math.max(2,(b.on+b.off)/max*100)}%;background:none;display:flex;flex-direction:column-reverse" data-t="${fdate(b.d)} · online ${eur(b.on)} · in-store ${eur(b.off)}"><i style="flex:${b.on};background:var(--copper);min-height:${b.on?1:0}px"></i><i style="flex:${b.off};background:var(--wine);min-height:${b.off?1:0}px"></i></div>`).join('')}</div>
+        <div class="chart-x"><span>${fdate(days[0])}</span><span>${fdate(days[14])}</span><span>Today</span></div></div>
+    </div>
+
+    <div class="grid g2" style="margin-top:18px">
+      <div class="card"><div class="card-h"><h3>Latest orders</h3><a href="orders">View all →</a></div>
+        <table class="tbl"><tbody>${recent.map(o=>`<tr class="click" onclick="location.href='orders?o=${o.id}'"><td><b style="font-weight:400">${o.id}</b><br><small style="color:var(--muted)">${fdate(o.date)}</small></td><td>${esc(o.name)}<br><small style="color:var(--muted)">${o.channel==='instore'?'In-store · '+esc(o.payment):'Online · '+esc(o.country)}</small></td><td>${pill(o.status,o.status==='paid'?'to ship':o.status)}</td><td class="r">${eur(o.total)}</td></tr>`).join('')}</tbody></table></div>
+      <div class="card"><div class="card-h"><h3>Needs attention</h3></div><div class="list">
+        <div><span>Low stock<br><small>${low.length?low.map(p=>esc(p.title+' '+(p.vintage||''))+' ('+p.stock.shop+')').slice(0,3).join(', '):'All good'}</small></span><a class="btn sm" href="products?filter=low">${low.length}</a></div>
+        <div><span>Pending RSVPs<br><small>Tour requests to confirm</small></span><a class="btn sm" href="tours">${pend}</a></div>
+        <div><span>Unread messages<br><small>Contact form &amp; enquiries</small></span><a class="btn sm" href="inbox">${unread}</a></div>
+        <div><span>Vineyard stock waiting<br><small>${drafts.length?drafts.map(p=>esc(p.title)+' '+esc(p.vintage)+' · '+p.stock.cellar.toLocaleString()+' btl').join(', '):'Nothing in draft'}</small></span><a class="btn sm" href="products?filter=draft">${drafts.length}</a></div></div></div>
+    </div>
+
+    <div class="grid g3" style="margin-top:18px">
+      <div class="card"><div class="card-h"><h3>Top sellers</h3><span class="hint">units · ${label}</span></div><div class="list">
+        ${top.map(([p,q])=>`<div><span class="pcell">${thumb(p)}<span><b>${esc(p.title)} ${esc(p.vintage||'')}</b><small>${esc(p.sku)}</small></span></span><b style="font-weight:400">${q}</b></div>`).join('')}</div></div>
+      <div class="card"><div class="card-h"><h3>Bottles: winery vs shop</h3><a href="products">Stock →</a></div><div class="list">
+        ${wines.slice(0,6).map(p=>`<div style="display:grid;grid-template-columns:1fr 110px;gap:14px"><span>${esc(p.title)} ${esc(p.vintage||'')}<br><small>${p.stock.shop} shop · ${p.stock.cellar||0} winery</small></span>
+          <div class="bar"><i style="width:${A.totalStock(p)/mx*100}%;background:var(--stone2)"></i><i style="width:${p.stock.shop/mx*100}%" class="${p.stock.shop<=8?'low':''}"></i></div></div>`).join('')}</div></div>
+      <div class="card"><div class="card-h"><h3>Upcoming tours</h3><a href="tours">Calendar →</a></div><div class="list">
+        ${upcoming.map(t=>`<div><span>${fdate(t.date,{weekday:'short',day:'numeric',month:'short'})} · ${t.time}<br><small>${esc(t.type)}</small></span><span class="seats">${seatsTaken(t)}/${t.capacity}</span></div>`).join('')||'<div class="empty">No tours scheduled</div>'}</div></div>
+    </div>`;
+    $('#chTabs').onclick = e => { const b=e.target.closest('[data-c]'); if(b){ ch=b.dataset.c; draw(); } };
+  }
+  draw();
+  const st=document.createElement('style'); st.textContent='@media(max-width:1200px){#split{grid-template-columns:1fr!important}}'; document.head.append(st);
+})();
+</script></body></html>

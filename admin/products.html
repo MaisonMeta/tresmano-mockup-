@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Products — TR3SMANO Admin</title><link rel="icon" href="../assets/logo_tr3smano-positivo.png">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css"></head>
+<body data-page="products" data-title="Products &amp; stock" data-sub="Wines, merch and experiences — with winery allocations feeding the shop."><main id="main"></main>
+<script src="../js/products.js"></script><script src="../js/db.js"></script><script src="admin.js"></script>
+<script>
+(function(){
+  const {db,eur,esc,img,pill,thumb,$,$$,D} = A;
+  const CATS = [['red','Red wine'],['white','White wine'],['collection','Collection / gift box'],['magnum','Magnum'],['selected','Also selected (guest producer)'],['merch','Merch'],['experience','Experience']];
+  const LIB = ['PROVENTUS-scaled.jpg','TRESMANO-SIN-ANADA-scaled.jpg','Tr3smano_2014.jpg','albillo-mayor-2021-1.jpg','albillo-mayor-2021.jpg','artmilla-tr3smano.jpg','vendimia_tr3smano.jpg','proventus_tr3smano.jpg','Tm-detalle.jpg','Tr3smano-detalle-2014.jpg','Tr3smano_VH_Serie3_Estuche1200x1200-1.jpg','merch-tote.svg','merch-glasses.svg','merch-corkscrew.svg','placeholder-bottle.svg'].map(f=>'assets/'+f).concat(A.assetList);
+  const qs = new URLSearchParams(location.search);
+  let tab = qs.get('filter') || 'all', q = '';
+  const TABS = [['all','All'],['wine','Wines'],['merch','Merch'],['experience','Experiences'],['draft','Drafts'],['low','Low stock']];
+  const match = (p,t) => t==='all' ? true : t==='wine' ? D.isWine(p) : t==='merch' ? p.cat==='merch' : t==='experience' ? p.cat==='experience' : t==='draft' ? p.status==='draft' : t==='low' ? (p.stock && p.stock.shop!=null && p.stock.shop<=8 && p.status==='active') : true;
+  A.acts('<button class="btn" id="bBulk">Bulk upload (CSV)</button><button class="btn" id="bStock">Vineyard stock</button><button class="btn solid" id="bNew">+ New product</button>');
+
+  $('#main').innerHTML = `<div class="toolbar"><div class="tabs" id="tabs"></div><input class="search" id="q" placeholder="Search name or SKU…"></div>
+    <div class="card" style="padding:0;overflow:auto"><table class="tbl"><thead><tr><th>Product</th><th>Type</th><th>Status</th><th class="r">Price</th><th>Shop stock</th><th>At winery</th><th class="r">Margin</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="card" style="margin-top:22px"><div class="card-h"><h3>Stock movements</h3><span class="hint">Winery → shop releases and bottling receipts</span></div><table class="tbl"><thead><tr><th>Date</th><th>Product</th><th class="r">Qty</th><th>Movement</th><th>Note</th></tr></thead><tbody id="mv"></tbody></table></div>`;
+
+  function render(){
+    $('#tabs').innerHTML = TABS.map(t=>`<button data-t="${t[0]}" class="${tab===t[0]?'on':''}">${t[1]}<small>${db.products.filter(p=>match(p,t[0])).length}</small></button>`).join('');
+    const list = db.products.filter(p=>match(p,tab) && (!q || (p.title+' '+(p.vintage||'')+' '+p.sku).toLowerCase().includes(q)));
+    $('#rows').innerHTML = list.map(p=>{
+      const sh = p.stock && p.stock.shop, ce = p.stock && p.stock.cellar, exp = p.cat==='experience', mg = p.cost ? Math.round((1-p.cost/p.price/1.21)*100) : null;
+      return `<tr class="click" data-id="${p.id}"><td><div class="pcell">${thumb(p)}<span><b>${esc(p.title)} ${esc(p.vintage||'')}</b><small>${esc(p.sku)} · ${esc(p.sub||'')}</small></span></div></td>
+        <td>${esc((CATS.find(c=>c[0]===p.cat)||[,p.cat])[1])}</td><td>${pill(p.status)}</td><td class="r">${eur(p.price)}</td>
+        <td>${exp?'<small style="color:var(--muted)">via Tours</small>':`<div style="display:flex;gap:10px;align-items:center"><b style="font-weight:400;min-width:28px">${sh}</b><div class="bar" style="width:70px"><i class="${sh<=8?'low':''}" style="width:${Math.min(100,sh/1.2)}%"></i></div></div>`}</td>
+        <td>${exp?'—':(ce||0).toLocaleString()}</td><td class="r">${mg!=null?mg+'%':'—'}</td><td class="r"><button class="btn sm ghost">Edit</button></td></tr>`;
+    }).join('') || '<tr><td colspan="8" class="empty">No products match.</td></tr>';
+    $('#mv').innerHTML = db.movements.slice().reverse().slice(0,12).map(m=>{const p=A.productById(m.product);return `<tr><td>${A.fdate(m.date)}</td><td>${p?esc(p.title+' '+(p.vintage||'')):esc(m.product)}</td><td class="r">${m.qty>0?'+':''}${m.qty}</td><td>${esc(m.from)} → ${esc(m.to)}</td><td>${esc(m.note||'')}</td></tr>`}).join('') || '<tr><td colspan="5" class="empty">No movements yet.</td></tr>';
+  }
+  $('#tabs').onclick = e => { const b=e.target.closest('[data-t]'); if(b){tab=b.dataset.t; render();} };
+  $('#q').oninput = e => { q=e.target.value.toLowerCase(); render(); };
+  $('#rows').onclick = e => { const tr=e.target.closest('tr[data-id]'); if(tr) edit(A.productById(tr.dataset.id)); };
+  $('#bNew').onclick = () => edit(null); $('#bBulk').onclick = bulk; $('#bStock').onclick = stock;
+
+  /* ───── product editor ───── */
+  function edit(p){
+    const isNew = !p; p = p ? JSON.parse(JSON.stringify(p)) : { id:'', title:'', vintage:'', sub:'', cat:'red', price:25, cost:9, sku:'', status:'draft', badge:'', description:'', stock:{shop:0,cellar:0}, img:'assets/placeholder-bottle.svg', alt:'', imgCover:false, altCover:false };
+    let imgs = [{src:p.img, cover:!!p.imgCover}]; if (p.alt && p.alt!==p.img) imgs.push({src:p.alt, cover:!!p.altCover});
+    A.panel(isNew?'New product':'Edit product', `
+      <div class="grid" style="grid-template-columns:1fr 190px;gap:26px;align-items:start"><div>
+        <div class="row r2"><div><label class="f">Name</label><input id="f_title" value="${esc(p.title)}" placeholder="Tr3smano Vendimia"></div><div><label class="f">Vintage / variant</label><input id="f_vintage" value="${esc(p.vintage||'')}" placeholder="2023"></div></div>
+        <div class="row r2"><div><label class="f">Subtitle</label><input id="f_sub" value="${esc(p.sub||'')}" placeholder="Ribera del Duero"></div><div><label class="f">Category</label><select id="f_cat">${CATS.map(c=>`<option value="${c[0]}" ${p.cat===c[0]?'selected':''}>${c[1]}</option>`).join('')}</select></div></div>
+        <div class="row r4"><div><label class="f">Price € (IVA incl.)</label><input id="f_price" type="number" min="0" step="0.5" value="${p.price}"></div><div><label class="f">Cost €</label><input id="f_cost" type="number" min="0" step="0.5" value="${p.cost||0}"></div><div><label class="f">SKU</label><input id="f_sku" value="${esc(p.sku||'')}"></div><div><label class="f">Badge</label><input id="f_badge" value="${esc(p.badge||'')}" placeholder="Limited"></div></div>
+        <div class="row r3" id="stockRow"><div><label class="f">Shop stock</label><input id="f_shop" type="number" min="0" value="${p.stock&&p.stock.shop||0}"></div><div><label class="f">At winery</label><input id="f_cellar" type="number" min="0" value="${p.stock&&p.stock.cellar||0}"></div><div><label class="f">Status</label><select id="f_status"><option value="active" ${p.status==='active'?'selected':''}>Active (visible in shop)</option><option value="draft" ${p.status==='draft'?'selected':''}>Draft (hidden)</option></select></div></div>
+        <p class="hint" id="expHint" style="display:none;margin:-4px 0 14px;color:var(--muted)">Experiences have no stock — seats are managed in <a href="tours" style="text-decoration:underline">Tours &amp; RSVP</a>.</p>
+        <div class="row"><div><label class="f">Description (shown on the product page)</label><textarea id="f_desc" rows="4">${esc(p.description||'')}</textarea></div></div>
+      </div>
+      <div><label class="f">Shop card preview</label><div class="preview"><div class="pimg"><img id="pv_img" src="" alt=""></div><h4 id="pv_t"></h4><small id="pv_s"></small><b style="font-weight:400" id="pv_p"></b></div></div></div>
+      <label class="f" style="margin-top:8px">Photos <span style="text-transform:none;letter-spacing:0">— 1st = shop card, 2nd = shown on hover</span></label>
+      <div class="drop" id="drop"><b>Drop photos here or click to upload</b>JPG / PNG / WebP · resized to 900 px in the browser (mock of a media upload)</div>
+      <input type="file" id="file" accept="image/*" multiple hidden>
+      <div class="imgs" id="imgs"></div>
+      <div style="margin-top:12px"><button class="btn sm ghost" id="libBtn">Pick from media library</button></div><div class="picker" id="picker" hidden></div>`,
+      `${isNew?'':'<button class="btn danger" id="del" style="margin-right:auto">Delete</button>'}${isNew?'':'<a class="btn ghost" id="view" target="_blank">View in shop ↗</a>'}<button class="btn ghost" id="cancel">Cancel</button><button class="btn solid" id="save">${isNew?'Create product':'Save changes'}</button>`);
+
+    const pv = () => { const m=imgs[0]||{}; const i=$('#pv_img'); i.src=img(m.src||''); i.className=m.cover?'cover':''; $('#pv_t').textContent=($('#f_title').value||'Product name')+' '+($('#f_vintage').value||''); $('#pv_s').textContent=$('#f_sub').value||'Subtitle'; $('#pv_p').textContent=eur(+$('#f_price').value||0); };
+    const drawImgs = () => { $('#imgs').innerHTML = imgs.map((m,i)=>`<figure><div class="im"><img class="${m.cover?'cover':''}" src="${esc(img(m.src))}"></div><button data-rm="${i}" title="Remove">×</button><figcaption>${i===0?'Main':i===1?'Hover':'Extra'}</figcaption><label class="chk" style="justify-content:center;font-size:11px;margin-top:2px"><input type="checkbox" data-cv="${i}" ${m.cover?'checked':''}>Fill</label></figure>`).join('') || '<small class="hint">No photos yet.</small>'; pv(); };
+    const stockToggle = () => { const ex=$('#f_cat').value==='experience'; $('#stockRow').style.display=ex?'none':''; $('#expHint').style.display=ex?'':'none'; };
+    drawImgs(); stockToggle();
+    ['f_title','f_vintage','f_sub','f_price'].forEach(id=>$('#'+id).oninput=pv); $('#f_cat').onchange=stockToggle;
+    $('#imgs').onclick = e => { const r=e.target.closest('[data-rm]'); if(r){imgs.splice(+r.dataset.rm,1); drawImgs();} };
+    $('#imgs').onchange = e => { const c=e.target.closest('[data-cv]'); if(c){imgs[+c.dataset.cv].cover=c.checked; drawImgs();} };
+    const addFiles = async files => { for (const f of files) { if(!f.type.startsWith('image/')) continue; try{ imgs.push({src:await A.readImage(f), cover:false}); }catch(e){} } if(imgs.length>1 && imgs[0].src==='assets/placeholder-bottle.svg') imgs.shift(); drawImgs(); };
+    const drop=$('#drop'); drop.onclick=()=>$('#file').click(); $('#file').onchange=e=>addFiles(e.target.files);
+    drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')}; drop.ondragleave=()=>drop.classList.remove('over'); drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');addFiles(e.dataTransfer.files)};
+    $('#libBtn').onclick=()=>{ const pk=$('#picker'); pk.hidden=!pk.hidden; if(!pk.innerHTML) pk.innerHTML=LIB.map(s=>`<img loading="lazy" data-s="${s}" src="../${s}" title="${s.split('/')[1]}">`).join(''); };
+    $('#picker').onclick=e=>{ const i=e.target.closest('[data-s]'); if(!i) return; const s=i.dataset.s; imgs.push({src:s, cover:!/(Tr3smano_|PROVENTUS|TRESMANO|albillo|artmilla|vendimia|proventus|merch|placeholder|estuche|Estuche|detalle)/.test(s)}); if(imgs[0].src==='assets/placeholder-bottle.svg'&&imgs.length>1) imgs.shift(); drawImgs(); };
+    $('#cancel').onclick=A.close;
+    if(!isNew){ $('#view').href='../product?p='+p.handle; $('#del').onclick=()=>A.confirm('Delete “'+p.title+' '+(p.vintage||'')+'”?',()=>{ db.products=db.products.filter(x=>x.id!==p.id); A.D.db.products=db.products; A.save(); render(); A.toast('Product deleted'); },'Delete'); }
+    $('#save').onclick = () => {
+      const title=$('#f_title').value.trim(), price=+$('#f_price').value; if(!title){ $('#f_title').focus(); return A.toast('Please enter a name'); } if(!(price>=0)) return A.toast('Check the price');
+      const cat=$('#f_cat').value, ex=cat==='experience', vint=$('#f_vintage').value.trim();
+      const out = Object.assign(p,{ title, vintage:vint, sub:$('#f_sub').value.trim(), cat, price, cost:+$('#f_cost').value||0, sku:$('#f_sku').value.trim()||('SKU-'+Date.now().toString(36).toUpperCase()), badge:$('#f_badge').value.trim(),
+        status:$('#f_status').value, description:$('#f_desc').value.trim(), blurb:$('#f_desc').value.trim(), type: ex?'experience':cat==='merch'?'merch':'wine',
+        stock: ex ? {shop:null,cellar:null} : {shop:+$('#f_shop').value||0, cellar:+$('#f_cellar').value||0},
+        img:(imgs[0]||{}).src||'assets/placeholder-bottle.svg', imgCover:!!(imgs[0]||{}).cover, alt:(imgs[1]||imgs[0]||{}).src||'', altCover:!!(imgs[1]||imgs[0]||{}).cover, updated:D.iso(new Date()) });
+      if(isNew){ let base=D.slug(title+' '+vint), h=base, n=2; while(db.products.some(x=>x.handle===h)) h=base+'-'+n++; out.handle=h; out.id=h; db.products.unshift(out); }
+      else { const i=db.products.findIndex(x=>x.id===p.id); db.products[i]=out; }
+      if(!A.save()) return; render(); A.close(); A.toast(isNew?'Product created — '+(out.status==='active'?'live in the shop':'saved as draft'):'Changes saved');
+    };
+  }
+
+  /* ───── vineyard stock ───── */
+  function stock(){
+    const cand = db.products.filter(p=>p.stock && p.stock.shop!=null);
+    const m = A.modal(`<h2>Vineyard stock</h2><p class="hint" style="margin:0 0 16px;color:var(--muted)">Bottles stay at the winery until you release them to the shop. New bottlings are received into winery stock first.</p>
+      <div class="row"><div><label class="f">Action</label><select id="s_mode"><option value="release">Release winery → shop</option><option value="receive">Receive new bottling (+ winery)</option></select></div></div>
+      <div class="row"><div><label class="f">Product</label><select id="s_p">${cand.map(p=>`<option value="${p.id}">${esc(p.title+' '+(p.vintage||''))} — shop ${p.stock.shop} · winery ${p.stock.cellar||0}</option>`).join('')}</select></div></div>
+      <div class="row r2"><div><label class="f">Quantity (bottles)</label><input id="s_q" type="number" min="1" value="24"></div><div><label class="f">Note</label><input id="s_n" placeholder="Spring release"></div></div>
+      <label class="chk" id="s_pubw"><input type="checkbox" id="s_pub" checked> Publish the product when it has shop stock</label>
+      <div class="acts"><button class="btn ghost" data-x>Cancel</button><button class="btn solid" data-ok>Apply</button></div>`);
+    $('[data-x]',m).onclick=A.close;
+    $('[data-ok]',m).onclick=()=>{ const p=A.productById($('#s_p').value), n=Math.max(1,+$('#s_q').value||0), mode=$('#s_mode').value;
+      if(mode==='release'){ if(n>(p.stock.cellar||0)) return A.toast('Only '+(p.stock.cellar||0)+' bottles at the winery'); p.stock.cellar-=n; p.stock.shop+=n; if($('#s_pub').checked && p.status==='draft') p.status='active'; db.movements.push({id:D.uid('s'),date:D.iso(new Date()),product:p.id,qty:n,from:'winery',to:'shop',note:$('#s_n').value}); }
+      else { p.stock.cellar=(p.stock.cellar||0)+n; db.movements.push({id:D.uid('s'),date:D.iso(new Date()),product:p.id,qty:n,from:'bottling',to:'winery',note:$('#s_n').value}); }
+      A.save(); A.close(); render(); A.toast(mode==='release'?n+' bottles released to the shop':n+' bottles received'); };
+  }
+
+  /* ───── CSV bulk upload ───── */
+  function bulk(){
+    const sample='name,vintage,category,price,cost,stock_shop,stock_winery\nTr3smano Rosado,2025,white,19,6,0,1200\nTr3smano Cap,,merch,22,7,40,0\nPoster — The Vineyard,,merch,15,3,25,0';
+    const m = A.modal(`<h2>Bulk upload</h2><p class="hint" style="margin:0 0 12px;color:var(--muted)">Paste a CSV or choose a file. Rows are imported as <b>drafts</b> with a photo placeholder, ready for review. (In production this maps to Shopify’s product CSV.)</p>
+      <textarea id="csv" rows="6" style="font-family:monospace;font-size:12px">${sample}</textarea>
+      <div style="margin:10px 0"><input type="file" id="csvf" accept=".csv,text/csv"></div><div id="csvp" class="hint" style="color:var(--muted)"></div>
+      <div class="acts"><button class="btn ghost" data-x>Cancel</button><button class="btn solid" data-ok>Import drafts</button></div>`);
+    const parse = () => { const rows=$('#csv').value.trim().split(/\r?\n/).map(l=>l.split(',').map(c=>c.trim())); const h=rows.shift().map(x=>x.toLowerCase()); return rows.filter(r=>r[0]).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]]))); };
+    const prev = () => { try{ $('#csvp').textContent = parse().length+' rows ready: '+parse().map(r=>r.name).join(', '); }catch(e){ $('#csvp').textContent='Could not read CSV'; } };
+    $('#csv').oninput=prev; prev(); $('#csvf').onchange=async e=>{ const f=e.target.files[0]; if(f){ $('#csv').value=await f.text(); prev(); } };
+    $('[data-x]',m).onclick=A.close;
+    $('[data-ok]',m).onclick=()=>{ const rows=parse(), cats=CATS.map(c=>c[0]); let n=0;
+      rows.forEach(r=>{ const cat=cats.includes((r.category||'').toLowerCase())?r.category.toLowerCase():'red', base=D.slug(r.name+' '+(r.vintage||'')); let h=base,k=2; while(db.products.some(x=>x.handle===h)) h=base+'-'+k++;
+        db.products.unshift({ id:h, handle:h, title:r.name, vintage:r.vintage||'', sub:'', cat, price:+r.price||0, cost:+r.cost||0, sku:'IMP-'+h.slice(0,10).toUpperCase(), status:'draft', badge:'', description:'', blurb:'', type:cat==='merch'?'merch':'wine',
+          stock:{shop:+r.stock_shop||0, cellar:+r.stock_winery||0}, img:'assets/placeholder-bottle.svg', alt:'', updated:D.iso(new Date()) }); n++; });
+      A.save(); A.close(); tab='draft'; render(); A.toast(n+' draft products imported'); };
+  }
+
+  render();
+  if(qs.get('new')) edit(null);
+})();
+</script></body></html>

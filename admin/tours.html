@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Tours &amp; RSVP — TR3SMANO Admin</title><link rel="icon" href="../assets/logo_tr3smano-positivo.png">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css"></head>
+<body data-page="tours" data-title="Tours &amp; RSVP" data-sub="Create tour slots, then confirm guest RSVPs from the public booking page."><main id="main"></main>
+<script src="../js/products.js"></script><script src="../js/db.js"></script><script src="admin.js"></script>
+<script>
+(function(){
+  const {db,esc,eur,fdate,pill,$,$$,D} = A;
+  const today=D.iso(new Date()); let cur=new Date(); cur.setDate(1); let sel=today;
+  const TYPES=[['Signature visit + tasting',40,12],['Vineyard walk & picnic',55,8],['Private barrel tasting',90,6],['Harvest experience',70,10]];
+  const taken=t=>t.rsvps.filter(r=>r.status!=='declined').reduce((a,r)=>a+r.guests,0);
+  A.acts('<a class="btn" href="../tours" target="_blank">Public booking page ↗</a><button class="btn solid" id="add">+ Add tour slot</button>');
+  $('#main').innerHTML=`<div class="grid" style="grid-template-columns:1.7fr 1fr;gap:22px;align-items:start" id="tg"><div><div class="cal-h"><h2 id="mt"></h2><div class="acts" style="display:flex;gap:8px"><button class="btn sm" id="pv">←</button><button class="btn sm" id="td">Today</button><button class="btn sm" id="nx">→</button></div></div><div class="cal" id="cal"></div></div><div class="card" id="day"></div></div>`;
+  const style=document.createElement('style'); style.textContent='@media(max-width:1100px){#tg{grid-template-columns:1fr!important}}'; document.head.append(style);
+  function cal(){
+    const y=cur.getFullYear(), m=cur.getMonth(); $('#mt').textContent=cur.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+    const first=(new Date(y,m,1).getDay()+6)%7, dim=new Date(y,m+1,0).getDate(); let h=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>`<div class="dow">${d}</div>`).join('');
+    for(let i=0;i<first;i++) h+='<div class="d dim"></div>';
+    for(let d=1;d<=dim;d++){ const iso=D.iso(new Date(Date.UTC(y,m,d,12))), ts=db.tours.filter(t=>t.date===iso).sort((a,b)=>a.time.localeCompare(b.time));
+      h+=`<div class="d ${iso===today?'today':''} ${iso===sel?'sel':''}" data-d="${iso}"><span class="n">${d}</span>${ts.map(t=>`<span class="ev ${taken(t)>=t.capacity?'full':''} ${t.rsvps.some(r=>r.status==='pending')?'pend':''}">${t.time} ${esc(t.type)}</span>`).join('')}</div>`; }
+    $('#cal').innerHTML=h;
+  }
+  function day(){
+    const ts=db.tours.filter(t=>t.date===sel).sort((a,b)=>a.time.localeCompare(b.time));
+    $('#day').innerHTML=`<div class="card-h"><h3>${fdate(sel,{weekday:'long',day:'numeric',month:'long'})}</h3><button class="btn sm" id="addd">+ Slot</button></div>`+(ts.map(t=>`<div style="padding:14px 0;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:10px"><div><b style="font-weight:400">${t.time} · ${esc(t.type)}</b><div class="seats">${taken(t)} of ${t.capacity} seats · ${eur(t.price)} pp</div></div><div style="display:flex;gap:6px"><button class="btn sm ghost" data-e="${t.id}">Edit</button></div></div>
+      ${t.rsvps.map(r=>`<div class="rsvp"><div>${esc(r.name)} · ${r.guests} guest${r.guests>1?'s':''} ${pill(r.status)}<small>${esc(r.email)}${r.note?' · “'+esc(r.note)+'”':''}</small></div><div style="display:flex;gap:6px">${r.status!=='confirmed'?`<button class="btn sm" data-c="${t.id}|${r.id}">Confirm</button>`:''}${r.status!=='declined'?`<button class="btn sm ghost" data-n="${t.id}|${r.id}">Decline</button>`:''}</div></div>`).join('')||'<small class="hint" style="display:block;margin-top:8px">No RSVPs yet.</small>'}</div>`).join('')||'<div class="empty">No tours on this day.<br><br><button class="btn" id="adde">Create a slot</button></div>');
+  }
+  const R=()=>{cal();day();};
+  $('#cal').onclick=e=>{const d=e.target.closest('[data-d]'); if(d){sel=d.dataset.d;R();}};
+  $('#pv').onclick=()=>{cur.setMonth(cur.getMonth()-1);cal();}; $('#nx').onclick=()=>{cur.setMonth(cur.getMonth()+1);cal();}; $('#td').onclick=()=>{cur=new Date();cur.setDate(1);sel=today;R();};
+  $('#day').onclick=e=>{
+    const c=e.target.closest('[data-c]'), n=e.target.closest('[data-n]'), ed=e.target.closest('[data-e]');
+    const act=(el,st)=>{const [tid,rid]=el.dataset[st==='confirmed'?'c':'n'].split('|'); const r=db.tours.find(t=>t.id===tid).rsvps.find(r=>r.id===rid); r.status=st; A.save(); R(); A.toast('RSVP '+st+' — confirmation email would be sent to '+r.email);};
+    if(c) act(c,'confirmed'); if(n) act(n,'declined'); if(ed) form(db.tours.find(t=>t.id===ed.dataset.e));
+    if(e.target.id==='addd'||e.target.id==='adde') form(null);
+  };
+  $('#add').onclick=()=>form(null);
+  function form(t){
+    const isNew=!t; t=t||{date:sel>=today?sel:today,time:'11:00',type:TYPES[0][0],capacity:12,price:40,notes:''};
+    const m=A.modal(`<h2>${isNew?'New tour slot':'Edit tour slot'}</h2>
+      <div class="row"><div><label class="f">Experience</label><select id="t_type">${TYPES.map(x=>`<option ${t.type===x[0]?'selected':''}>${x[0]}</option>`).join('')}<option value="__c" ${TYPES.some(x=>x[0]===t.type)?'':'selected'}>Custom…</option></select></div></div>
+      <div class="row" id="cw" ${TYPES.some(x=>x[0]===t.type)?'hidden':''}><div><label class="f">Custom name</label><input id="t_c" value="${TYPES.some(x=>x[0]===t.type)?'':esc(t.type)}" placeholder="Private winemaker dinner"></div></div>
+      <div class="row r2"><div><label class="f">Date</label><input type="date" id="t_d" value="${t.date}"></div><div><label class="f">Time</label><input type="time" id="t_t" value="${t.time}"></div></div>
+      <div class="row r2"><div><label class="f">Capacity (guests)</label><input type="number" id="t_cap" min="1" value="${t.capacity}"></div><div><label class="f">Price € per person</label><input type="number" id="t_p" min="0" value="${t.price}"></div></div>
+      <div class="row"><div><label class="f">Description (shown on the booking page)</label><textarea id="t_n" rows="3">${esc(t.notes||'')}</textarea></div></div>
+      <div class="acts">${isNew?'':'<button class="btn danger" id="t_del" style="margin-right:auto">Delete</button>'}<button class="btn ghost" data-x>Cancel</button><button class="btn solid" data-ok>${isNew?'Create slot':'Save'}</button></div>`);
+    $('#t_type').onchange=e=>{ $('#cw').hidden=e.target.value!=='__c'; const x=TYPES.find(y=>y[0]===e.target.value); if(x){$('#t_cap').value=x[2];$('#t_p').value=x[1];} };
+    $('[data-x]',m).onclick=A.close;
+    if(!isNew) $('#t_del').onclick=()=>{ db.tours=db.tours.filter(x=>x.id!==t.id); db.tours.length; A.D.db.tours=db.tours; A.save(); A.close(); R(); A.toast('Slot deleted'); };
+    $('[data-ok]',m).onclick=()=>{ const ty=$('#t_type').value==='__c'?$('#t_c').value.trim():$('#t_type').value; if(!ty) return A.toast('Name the experience');
+      const o=Object.assign(t,{type:ty,date:$('#t_d').value,time:$('#t_t').value,capacity:+$('#t_cap').value||1,price:+$('#t_p').value||0,notes:$('#t_n').value.trim()});
+      if(isNew){o.id=D.uid('t');o.rsvps=[];db.tours.push(o);} sel=o.date; const dd=new Date(o.date+'T12:00:00'); cur=new Date(dd.getFullYear(),dd.getMonth(),1); A.save(); A.close(); R(); A.toast(isNew?'Slot created — live on the booking page':'Slot updated'); };
+  }
+  R();
+})();
+</script></body></html>

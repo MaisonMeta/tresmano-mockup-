@@ -22,5 +22,11 @@ window.TM_CHECKOUT = async function (lines) {
   if (C.MODE === 'shopify') {
     /* cartCreate mutation with merchandiseId per line, then: location.href = cart.checkoutUrl */
   }
+  if (window.TM_DB) {                                   // POC: create a real order in the shared mock DB
+    const o = window.TM_DB.placeOrder(lines, { name:'Demo customer', email:'demo@example.com' });
+    window.TM.clear(); window.TM.open(false);
+    window.TM.toast('Demo order ' + o.id + ' placed — see it in Admin → Orders');
+    return;
+  }
   window.TM.toast('Mock checkout — Stripe / Shopify hand-off happens here');
 };

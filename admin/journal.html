@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Journal — TR3SMANO Admin</title><link rel="icon" href="../assets/logo_tr3smano-positivo.png">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css"></head>
+<body data-page="journal" data-title="Journal" data-sub="Blog posts for the storefront Journal page."><main id="main"></main>
+<script src="../js/products.js"></script><script src="../js/db.js"></script><script src="admin.js"></script>
+<script>
+(function(){
+  const {db,esc,fdate,pill,img,$,D} = A;
+  let tab='all';
+  A.acts('<a class="btn" href="../journal" target="_blank">View journal ↗</a><button class="btn solid" id="np">+ New post</button>');
+  $('#main').innerHTML='<div class="toolbar"><div class="tabs" id="tabs"></div></div><div class="posts" id="posts"></div>';
+  const md = t => esc(t).split(/\n{2,}/).map(b=>b.startsWith('## ')?`<h3 style="font-size:26px;margin:18px 0 8px">${b.slice(3)}</h3>`:`<p style="margin:0 0 12px">${b.replace(/\n/g,'<br>')}</p>`).join('');
+  function render(){
+    $('#tabs').innerHTML=[['all','All'],['published','Published'],['draft','Drafts']].map(t=>`<button data-t="${t[0]}" class="${tab===t[0]?'on':''}">${t[1]}<small>${db.posts.filter(p=>t[0]==='all'||p.status===t[0]).length}</small></button>`).join('');
+    $('#posts').innerHTML=db.posts.filter(p=>tab==='all'||p.status===tab).sort((a,b)=>b.date.localeCompare(a.date)).map(p=>`<article class="post" data-id="${p.id}"><div class="cv"><img loading="lazy" src="${esc(img(p.cover))}" alt=""></div><div class="tx"><div style="display:flex;justify-content:space-between;align-items:center">${pill(p.status)}<small style="color:var(--muted)">${fdate(p.date,{day:'numeric',month:'short',year:'numeric'})}</small></div><h3>${esc(p.title)}</h3><p>${esc(p.excerpt)}</p></div></article>`).join('')||'<div class="empty">No posts.</div>';
+  }
+  $('#tabs').onclick=e=>{const b=e.target.closest('[data-t]'); if(b){tab=b.dataset.t;render();}};
+  $('#posts').onclick=e=>{const a=e.target.closest('[data-id]'); if(a) edit(db.posts.find(p=>p.id===a.dataset.id));};
+  $('#np').onclick=()=>edit(null);
+  function edit(p){
+    const isNew=!p; p=p?JSON.parse(JSON.stringify(p)):{title:'',slug:'',excerpt:'',body:'',cover:A.assetList[5],status:'draft',date:D.iso(new Date()),tags:[]};
+    A.panel(isNew?'New post':'Edit post',`<div class="grid" style="grid-template-columns:1fr 1fr;gap:26px;align-items:start"><div>
+      <div class="row"><div><label class="f">Title</label><input id="p_t" value="${esc(p.title)}" placeholder="A morning in the vineyard"></div></div>
+      <div class="row r2"><div><label class="f">Date</label><input type="date" id="p_d" value="${p.date}"></div><div><label class="f">Status</label><select id="p_s"><option value="draft" ${p.status==='draft'?'selected':''}>Draft</option><option value="published" ${p.status==='published'?'selected':''}>Published</option></select></div></div>
+      <div class="row r2"><div><label class="f">URL slug</label><input id="p_sl" value="${esc(p.slug)}" placeholder="auto from title"></div><div><label class="f">Tags</label><input id="p_tg" value="${esc((p.tags||[]).join(', '))}" placeholder="Vineyard, Harvest"></div></div>
+      <div class="row"><div><label class="f">Excerpt</label><textarea id="p_e" rows="2">${esc(p.excerpt)}</textarea></div></div>
+      <div class="row"><div><label class="f">Body — <span style="text-transform:none;letter-spacing:0">blank line = new paragraph · <b>##</b> = heading</span></label><textarea id="p_b" rows="12">${esc(p.body)}</textarea></div></div>
+      <label class="f">Cover image</label><div class="drop" id="drop" style="padding:14px"><b>Upload a cover</b>or choose below</div><input type="file" id="file" accept="image/*" hidden>
+      <div class="picker" id="pk">${A.assetList.map(s=>`<img loading="lazy" data-s="${s}" src="../${s}" class="${p.cover===s?'on':''}">`).join('')}</div></div>
+      <div><label class="f">Live preview</label><div style="background:#fff;border:1px solid var(--line)"><div style="aspect-ratio:16/9;background:var(--stone);overflow:hidden"><img id="v_i" style="width:100%;height:100%;object-fit:cover"></div><div style="padding:20px 22px"><small style="color:var(--muted);letter-spacing:.2em;text-transform:uppercase;font-size:10.5px" id="v_m"></small><h2 id="v_t" style="font-size:36px;font-weight:300;margin:8px 0 14px;line-height:1"></h2><div id="v_b" style="font-size:14.5px"></div></div></div></div></div>`,
+      `${isNew?'':'<button class="btn danger" id="p_del" style="margin-right:auto">Delete</button>'}<button class="btn ghost" id="p_c">Cancel</button><button class="btn solid" id="p_save">${isNew?'Create post':'Save'}</button>`,true);
+    const pv=()=>{ $('#v_i').src=img(p.cover); $('#v_t').textContent=$('#p_t').value||'Untitled'; $('#v_b').innerHTML=md($('#p_b').value||'Start writing…'); $('#v_m').textContent=fdate($('#p_d').value,{day:'numeric',month:'long',year:'numeric'})+' · '+$('#p_s').value; $$('#pk img').forEach(i=>i.classList.toggle('on',i.dataset.s===p.cover)); };
+    const $$=s=>[...document.querySelectorAll(s)];
+    ['p_t','p_b','p_d','p_s'].forEach(i=>$('#'+i).oninput=pv); pv();
+    $('#pk').onclick=e=>{const i=e.target.closest('[data-s]'); if(i){p.cover=i.dataset.s;pv();}};
+    $('#drop').onclick=()=>$('#file').click(); $('#file').onchange=async e=>{ if(e.target.files[0]){ p.cover=await A.readImage(e.target.files[0],1400); pv(); } };
+    $('#p_c').onclick=A.close;
+    if(!isNew) $('#p_del').onclick=()=>A.confirm('Delete this post?',()=>{ db.posts=db.posts.filter(x=>x.id!==p.id); D.db.posts=db.posts; A.save(); render(); A.toast('Post deleted'); },'Delete');
+    $('#p_save').onclick=()=>{ const t=$('#p_t').value.trim(); if(!t) return A.toast('Add a title');
+      Object.assign(p,{title:t,date:$('#p_d').value,status:$('#p_s').value,slug:D.slug($('#p_sl').value||t),tags:$('#p_tg').value.split(',').map(x=>x.trim()).filter(Boolean),excerpt:$('#p_e').value.trim()||$('#p_b').value.slice(0,140),body:$('#p_b').value});
+      if(isNew){p.id=D.uid('p');db.posts.push(p);} else {db.posts[db.posts.findIndex(x=>x.id===p.id)]=p;}
+      if(!A.save()) return; A.close(); render(); A.toast(p.status==='published'?'Published — live on the Journal page':'Saved as draft'); };
+  }
+  render();
+})();
+</script></body></html>

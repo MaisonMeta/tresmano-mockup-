@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Journal — TR3SMANO</title>
+<link rel="icon" href="assets/logo_tr3smano-positivo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+.jgrid{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(24px,3vw,48px) 24px}
+.jcard{grid-column:span 4;display:block}
+.jcard:first-child{grid-column:span 8}.jcard:nth-child(2){grid-column:span 4}
+.jcard .im{overflow:hidden;aspect-ratio:16/10;background:var(--stone)}.jcard:nth-child(2) .im{aspect-ratio:4/5}
+.jcard img{width:100%;height:100%;object-fit:cover;transition:transform 1.5s var(--ease)}.jcard:hover img{transform:scale(1.05)}
+.jcard small{display:block;margin-top:18px;font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+.jcard h2{font-size:clamp(28px,3vw,46px);font-weight:300;margin:8px 0;line-height:1.02}.jcard p{color:#463f37;max-width:46ch;font-size:15px}
+@media(max-width:900px){.jcard,.jcard:first-child,.jcard:nth-child(2){grid-column:1/-1}.jcard:nth-child(2) .im{aspect-ratio:16/10}}
+.art{max-width:760px;margin:0 auto}.art h1{font-size:clamp(42px,6vw,92px);font-weight:300;line-height:.96;letter-spacing:-.02em;margin:18px 0 28px}
+.art .lede{font-family:var(--serif);font-style:italic;font-size:clamp(22px,2.2vw,30px);color:#463f37;line-height:1.3;margin-bottom:40px}
+.art .body p{font-size:18px;line-height:1.75;color:#2b2621;margin:0 0 24px}.art .body h3{font-size:clamp(30px,3vw,44px);font-weight:300;margin:48px 0 18px}
+.hero-img{aspect-ratio:21/9;overflow:hidden;margin:0 0 clamp(40px,6vw,80px);background:var(--stone)}.hero-img img{width:100%;height:100%;object-fit:cover}
+</style>
+</head>
+<body data-page="journal" data-header="light">
+<div id="view"></div>
+<div id="footer-mount"></div>
+<script src="js/products.js"></script><script src="js/db.js"></script><script src="js/config.js"></script><script src="js/main.js"></script>
+<script>
+(function(){
+  const db = TM_DB.db, slug = new URLSearchParams(location.search).get('p');
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const fd = d => new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+  const posts = db.posts.filter(p => p.status === 'published').sort((a, b) => b.date.localeCompare(a.date));
+  const v = document.getElementById('view');
+  const post = slug && posts.find(p => p.slug === slug);
+  if (post) {
+    document.title = post.title + ' — TR3SMANO';
+    const body = esc(post.body).split(/\n{2,}/).map(b => b.startsWith('## ') ? `<h3>${b.slice(3)}</h3>` : `<p>${b.replace(/\n/g, '<br>')}</p>`).join('');
+    v.innerHTML = `<div class="wrap" style="padding-top:calc(var(--header-h) + clamp(50px,8vw,120px))"><article class="art"><span class="eyebrow">${fd(post.date)}${post.tags.length ? ' · ' + post.tags.map(esc).join(', ') : ''}</span><h1 class="split">${esc(post.title)}</h1><p class="lede" data-reveal>${esc(post.excerpt)}</p></article>
+      <figure class="hero-img" data-reveal="img"><img src="${post.cover}" alt=""></figure><div class="art"><div class="body" data-reveal>${body}</div><p style="margin:50px 0 clamp(60px,8vw,120px)"><a class="link" href="journal"><span class="arrow" style="transform:scaleX(-1)"></span> All stories</a></p></div></div>`;
+  } else {
+    v.innerHTML = `<section class="page-hero" style="background:var(--paper)"><div class="wrap"><span class="eyebrow" data-reveal>Stories from the vineyard</span><h1 class="h-xl split">The <em>Journal</em></h1></div></section>
+      <main class="wrap" style="padding-bottom:clamp(80px,10vw,150px)"><div class="jgrid">${posts.map(p => `<a class="jcard" href="journal?p=${p.slug}" data-reveal><div class="im"><img class="lazy" loading="lazy" src="${p.cover}" alt=""></div><small>${fd(p.date)}${p.tags.length ? ' · ' + esc(p.tags[0]) : ''}</small><h2>${esc(p.title)}</h2><p>${esc(p.excerpt)}</p></a>`).join('') || '<p>No stories yet.</p>'}</div></main>`;
+  }
+  TM.hookLazy(v); TM.hookReveal(v);
+})();
+</script>
+</body></html>

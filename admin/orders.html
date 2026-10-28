@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Orders — TR3SMANO Admin</title><link rel="icon" href="../assets/logo_tr3smano-positivo.png">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css"></head>
+<body data-page="orders" data-title="Orders" data-sub="Online shop orders and winery counter sales in one list."><main id="main"></main>
+<script src="../js/products.js"></script><script src="../js/db.js"></script><script src="admin.js"></script>
+<script>
+(function(){
+  const {db,eur,esc,fdate,pill,$,D} = A;
+  let tab='all', q='', chn='all';
+  const TABS=[['all','All'],['paid','To ship'],['shipped','Shipped'],['delivered','Delivered'],['completed','In-store completed'],['refunded','Refunded']];
+  A.acts('<button class="btn" id="exp">Export CSV</button><button class="btn solid" id="sale">+ In-store sale</button>');
+  $('#main').innerHTML=`<div class="toolbar"><div class="tabs" id="tabs"></div><select id="chn" style="width:auto"><option value="all">All channels</option><option value="online">Online shop</option><option value="instore">In-store</option></select><input class="search" id="q" placeholder="Search order, name, email…" style="margin-left:0"></div>
+   <div class="card" style="padding:0;overflow:auto"><table class="tbl"><thead><tr><th>Order</th><th>Date</th><th>Customer</th><th>Items</th><th>Channel</th><th>Status</th><th class="r">Total</th></tr></thead><tbody id="rows"></tbody></table></div>`;
+  const list=()=>db.orders.slice().sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id)).filter(o=>(tab==='all'||o.status===tab)&&(chn==='all'||o.channel===chn)&&(!q||(o.id+o.name+o.email).toLowerCase().includes(q)));
+  function render(){
+    $('#tabs').innerHTML=TABS.map(t=>`<button data-t="${t[0]}" class="${tab===t[0]?'on':''}">${t[1]}<small>${db.orders.filter(o=>t[0]==='all'||o.status===t[0]).length}</small></button>`).join('');
+    $('#rows').innerHTML=list().map(o=>`<tr class="click" data-id="${o.id}"><td><b style="font-weight:400">${o.id}</b></td><td>${fdate(o.date)}</td><td>${esc(o.name)}<br><small style="color:var(--muted)">${o.channel==='instore'?esc(o.payment):esc(o.city)+', '+esc(o.country)}</small></td><td>${o.lines.reduce((a,l)=>a+l.qty,0)} × ${o.lines.length>1?o.lines.length+' products':esc(o.lines[0].title)}</td><td>${o.channel==='instore'?A.pill('draft','In-store'):A.pill('paid','Online')} <small style="color:var(--muted)">${esc(o.source||'')}</small></td><td>${pill(o.status,o.status==='paid'?'to ship':o.status)}</td><td class="r">${eur(o.total)}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">No orders.</td></tr>';
+  }
+  $('#tabs').onclick=e=>{const b=e.target.closest('[data-t]'); if(b){tab=b.dataset.t;render();}};
+  $('#chn').onchange=e=>{chn=e.target.value;render();}; $('#sale').onclick=sale; $('#q').oninput=e=>{q=e.target.value.toLowerCase();render();};
+  $('#rows').onclick=e=>{const tr=e.target.closest('tr[data-id]'); if(tr) open(tr.dataset.id);};
+  $('#exp').onclick=()=>{ const csv='order,date,customer,email,country,status,subtotal,shipping,total\n'+db.orders.map(o=>[o.id,o.date,o.name,o.email,o.country,o.status,o.subtotal,o.shipping,o.total].join(',')).join('\n'); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='tresmano-orders.csv'; a.click(); A.toast('Orders exported'); };
+  function open(id){
+    const o=db.orders.find(x=>x.id===id);
+    A.panel('Order '+o.id,`<div class="grid g2e" style="gap:22px"><div><label class="f">Customer</label><div><b style="font-weight:400">${esc(o.name)}</b><br>${esc(o.email||'—')}<br>${esc(o.city)}, ${esc(o.country)}</div></div><div><label class="f">Placed</label><div>${fdate(o.date,{day:'numeric',month:'long',year:'numeric'})}<br>${o.channel==='instore'?'In-store · '+esc(o.payment):'Online · '+esc(o.source||'')}</div></div></div>
+      <table class="tbl" style="margin-top:22px"><thead><tr><th>Item</th><th class="r">Qty</th><th class="r">Unit</th><th class="r">Line</th></tr></thead><tbody>${o.lines.map(l=>{const p=A.productById(l.id);return `<tr><td><div class="pcell">${p?A.thumb(p):''}<span>${esc(l.title)}</span></div></td><td class="r">${l.qty}</td><td class="r">${eur(l.unit)}</td><td class="r">${eur(l.qty*l.unit)}</td></tr>`}).join('')}
+      <tr><td colspan="3" class="r">Subtotal</td><td class="r">${eur(o.subtotal)}</td></tr><tr><td colspan="3" class="r">Shipping</td><td class="r">${o.shipping?eur(o.shipping):'Free'}</td></tr><tr><td colspan="3" class="r"><b style="font-weight:500">Total (IVA incl.)</b></td><td class="r"><b style="font-weight:500">${eur(o.total)}</b></td></tr></tbody></table>
+      <div class="row r2" style="margin-top:22px"><div><label class="f">Status</label><select id="o_s">${(o.channel==='instore'?['completed','refunded']:['paid','shipped','delivered','refunded']).map(s=>`<option value="${s}" ${o.status===s?'selected':''}>${s==='paid'?'Paid — to ship':s[0].toUpperCase()+s.slice(1)}</option>`).join('')}</select></div><div ${o.channel==='instore'?'hidden':''}><label class="f">Tracking number</label><input id="o_t" value="${esc(o.tracking||'')}" placeholder="e.g. 1Z999AA10123456784"></div></div>
+      <div class="row"><div><label class="f">Internal note</label><textarea id="o_n" rows="3">${esc(o.note||'')}</textarea></div></div>`,
+      `<button class="btn ghost" onclick="window.print()" style="margin-right:auto">Print packing slip</button><button class="btn ghost" id="oc">Cancel</button><button class="btn solid" id="os">Save order</button>`);
+    $('#oc').onclick=A.close;
+    $('#os').onclick=()=>{ const s=$('#o_s').value;
+      if(s==='refunded' && o.status!=='refunded'){ o.lines.forEach(l=>{const p=A.productById(l.id); if(p&&p.stock&&p.stock.shop!=null) p.stock.shop+=l.qty;}); }
+      o.status=s; o.tracking=$('#o_t').value.trim(); o.note=$('#o_n').value.trim(); A.save(); A.close(); render(); A.toast('Order '+o.id+' updated'+(s==='refunded'?' · stock restored':'')); };
+  }
+
+  function sale(){
+    const items=db.products.filter(p=>p.status==='active'&&p.cat!=='experience'&&p.stock&&p.stock.shop!=null); const cart={};
+    A.panel('New in-store sale',`<div class="row r2"><div><label class="f">Customer (optional)</label><input id="s_n" placeholder="Walk-in customer"></div><div><label class="f">Payment</label><select id="s_p"><option>Card</option><option>Cash</option></select></div></div>
+      <input id="s_q" placeholder="Search products…" style="margin-bottom:10px"><div id="s_l"></div>`,
+      `<b style="font-family:var(--serif);font-weight:400;font-size:28px;margin-right:auto" id="s_t">€0</b><button class="btn ghost" id="s_c">Cancel</button><button class="btn solid" id="s_ok">Record sale</button>`);
+    const tot=()=>Object.entries(cart).reduce((a,[id,q])=>a+q*A.productById(id).price,0);
+    const draw=()=>{ const f=$('#s_q').value.toLowerCase(); $('#s_l').innerHTML=items.filter(p=>!f||(p.title+' '+(p.vintage||'')).toLowerCase().includes(f)).map(p=>`<div class="rsvp" style="grid-template-columns:1fr auto"><div class="pcell">${A.thumb(p)}<span><b>${esc(p.title)} ${esc(p.vintage||'')}</b><small>${eur(p.price)} · ${p.stock.shop} in stock</small></span></div><div style="display:flex;align-items:center;gap:8px"><button class="btn sm ghost" data-m="${p.id}">−</button><b style="font-weight:400;min-width:18px;text-align:center">${cart[p.id]||0}</b><button class="btn sm ghost" data-p="${p.id}" ${(cart[p.id]||0)>=p.stock.shop?'disabled':''}>+</button></div></div>`).join(''); $('#s_t').textContent=eur(tot()); };
+    draw(); $('#s_q').oninput=draw;
+    $('#s_l').onclick=e=>{ const m=e.target.closest('[data-m]'),p=e.target.closest('[data-p]'); if(p) cart[p.dataset.p]=(cart[p.dataset.p]||0)+1; if(m&&cart[m.dataset.m]) cart[m.dataset.m]--; draw(); };
+    $('#s_c').onclick=A.close;
+    $('#s_ok').onclick=()=>{ const ids=Object.keys(cart).filter(id=>cart[id]>0); if(!ids.length) return A.toast('Add at least one product');
+      const lines=ids.map(id=>{const p=A.productById(id); p.stock.shop-=cart[id]; return {id,title:p.title+(p.vintage?' '+p.vintage:''),qty:cart[id],unit:p.price};}); const sub=lines.reduce((a,l)=>a+l.qty*l.unit,0);
+      const n=2001+db.orders.filter(o=>o.channel==='instore').length;
+      db.orders.push({id:'POS-'+n,date:D.iso(new Date()),lines,subtotal:sub,shipping:0,total:sub,name:$('#s_n').value.trim()||'Walk-in customer',email:'',country:'ES',city:'Winery shop',status:'completed',channel:'instore',source:'Counter',payment:$('#s_p').value});
+      A.save(); A.close(); render(); A.toast('Sale POS-'+n+' recorded · stock updated'); };
+  }
+  render(); const qp=new URLSearchParams(location.search); if(qp.get('o')) open(qp.get('o')); if(qp.get('sale')) sale();
+})();
+</script></body></html>
